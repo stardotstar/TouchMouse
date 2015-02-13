@@ -1,0 +1,22 @@
+{
+  "name": "Touchy",
+  "main": "touchy.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/stardotstar/TouchMouse",
+  "authors": [
+    "Rob Aldred <rob@stardotstar.com>"
+  ],
+  "description": "Simple Library to normalize mouse and touch events for all browsers & platforms",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "eventEmitter": "~4.2.11",
+    "eventie": "~1.0.6"
+  }
+}

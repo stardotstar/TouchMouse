@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+	<title>Test Page for TouchMouse.js</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+	<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="bower_components/eventEmitter/EventEmitter.min.js"></script>
+	<script src="bower_components/eventie/eventie.js"></script>
+	<script src="touchy.js"></script>
+
+	<style>
+		html,body {
+			width: 100%;
+			height: 100%;
+		}
+
+		#testarea {
+			margin: 0 auto;
+			background-color: #f1f1f1;
+			border: 1px solid #333;
+			width:80%;
+			height:80%;
+			box-sizing: border-box;
+			padding: 1em;
+			overflow: scroll;
+		}
+
+		#testarea span {
+			color: #f9f9f9;
+		}
+
+		#testarea .currentstate,
+		#testarea .lastguesture {
+			color: black;
+		}
+	</style>
+</head>
+<body>
+
+	<h1>Touch Mouse</h1>
+	<p>
+		Simple touch library to normalize touch and mouse inputs and to address platform issues like Windows where the device can have both input mechanisms.
+	</p>
+	<div id="testarea">
+		<span>Test area</span>
+		<pre id="currentevent">
+			<div class='currentstate'></div>
+			<div class='lastguesture'></div>
+		</pre>
+	</div>
+
+	<script>
+
+		var touchy = new Touchy('#testarea');
+
+		touchy.on('start',function(t,event,pointer) {
+			$('.currentstate').text('start');
+			$('.lastguesture').text('');
+		});
+
+		touchy.on('move',function(t,event,pointer) {
+			$('.currentstate').text('move distance: x:' + t.distance.x + 'y:' + t.distance.y);
+		});
+
+		touchy.on('end',function(t,event,pointer) {
+			$('.currentstate').text('end distance: x:' + t.distance.x + 'y:' + t.distance.y);
+		});
+
+		touchy.on('hold',function() {
+			$('.lastguesture').text('hold');
+		});
+
+		touchy.on('tap',function() {
+			$('.lastguesture').text('tap');
+		});
+	</script>
+
+
+</body>
+</html>
