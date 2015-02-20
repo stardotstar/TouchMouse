@@ -6,16 +6,26 @@
 	<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
 	<script src="bower_components/eventEmitter/EventEmitter.min.js"></script>
 	<script src="bower_components/eventie/eventie.js"></script>
+	<script src="bower_components/gsap/src/uncompressed/TweenMax.js"></script>
+	<script src="bower_components/jquery-transformer/jquery-transformer.js"></script>
 	<script src="touchy.js"></script>
 
 	<style>
 		html,body {
 			width: 100%;
 			height: 100%;
+			font-family: sans-serif;
+		}
+
+		#dragtest {
+			width: 200px;
+			height: 50px;
+			background-color: dodgerblue;
+			padding: 10px;
 		}
 
 		#testarea {
-			margin: 0 auto;
+			margin: 20px auto;
 			background-color: #f1f1f1;
 			border: 1px solid #333;
 			width:80%;
@@ -23,6 +33,14 @@
 			box-sizing: border-box;
 			padding: 1em;
 			overflow: scroll;
+		}
+
+		#testarea,
+		#testarea pre,
+		#testarea .currentstate,
+		#testarea .lastguesture {
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
 		}
 
 		#testarea span {
@@ -41,6 +59,12 @@
 	<p>
 		Simple touch library to normalize touch and mouse inputs and to address platform issues like Windows where the device can have both input mechanisms.
 	</p>
+
+	<div id="dragtest">
+		Drag me
+	</div>
+
+
 	<div id="testarea">
 		<span>Test area</span>
 		<pre id="currentevent">
@@ -50,6 +74,17 @@
 	</div>
 
 	<script>
+
+		var dragtouchy = new Touchy('#dragtest', {drag: true});
+		dragtouchy.on('drag',function(t,event,pointer) {
+			console.log('dragging');
+		});
+
+		dragtouchy.on('end',function(t,event,pointer) {
+			console.log('ended');
+		});
+
+
 
 		var touchy = new Touchy('#testarea');
 

@@ -17,6 +17,8 @@
   ],
   "dependencies": {
     "eventEmitter": "~4.2.11",
-    "eventie": "~1.0.6"
+    "eventie": "~1.0.6",
+    "gsap": "~1.15.1",
+    "jquery-transformer": "*"
   }
 }

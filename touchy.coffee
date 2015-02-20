@@ -4,15 +4,13 @@ touchy.js, version 1.0
 Normalise mouse/touch events.
 
 (c) 2015 Copyright Stardotstar.
-project located at https://github.com/stardotstar/TouchMouse.js.
+project located at https://github.com/stardotstar/Touchy.js.
 Licenced under the Apache license (see LICENSE file)
 
 Events have the following custom data:
-* maskedEvent: the event that triggered the pointer event.
-* touch: boolean- is maskedEvent a touch event?
-* mouse: boolean- is maskedEvent a mouse event?
-* x: page-normalized x coordinate of the event.
-* y: page-normalized y coordinate of the event.
+* touchy: the touchy instance that is responding to the event.
+* event: the original javascript event triggered.
+* pointer: the mouse/touch/pointer object responsible for the event.
 ###
 
 ((window) ->
@@ -26,7 +24,7 @@ Events have the following custom data:
 
 	noop = ->
 
-	TouchyDefinition = ($, EventEmitter, eventie) ->
+	TouchyDefinition = ($, EventEmitter, eventie, TweenMax) ->
 
 		document = window.document
 		user_agent = navigator.userAgent.toLowerCase()
@@ -39,22 +37,23 @@ Events have the following custom data:
 		disableImageDrag = if is_ie8 then $.noop() else (handle) ->
 			handle_elm = handle
 			if handle_elm.nodeName == 'IMG'
-    			handle_elm.ondragstart = dummyDragStart
+				handle_elm.ondragstart = dummyDragStart
 
-    		for imgs in $(handle).find('img')
-    			im.ondragstart = dummyDragStart
+			for imgs in $(handle).find('img')
+				im.ondragstart = dummyDragStart
 
 		class Touchy
 			constructor: (elm,options) ->
 				@elm = $(elm)
 				@enabled = true
 				@touching = false
+				@holding = false
 				@dragging = false
-				@options = extend {}, _default_options, options
+				@options = $.extend {}, _default_options, options
 				console.log('Initialized Touchy on', @elm ,@options)
 
 				@_setPosition()				
-				@start_position = extend {}, @position
+				@start_position = $.extend {}, @position
 				@start_point = x: 0, y: 0
 				@current_point = x: 0, y: 0
 
@@ -65,12 +64,13 @@ Events have the following custom data:
 				@enable()
 
 			_default_options =
-				allow_scroll: false
-				axis: null
+				drag: false
+				drag_axis: null
 				handle: ''
 				hold_interval: 500
 				tap_threshold: 4
 				double_tap_interval: 500
+				drag_threshold: 5
 
 			extend Touchy.prototype, EventEmitter.prototype
 
@@ -151,7 +151,8 @@ Events have the following custom data:
 			startTouchy: (event, pointer) ->
 				return unless @enabled
 
-				if not @options.allow_scroll
+				if @options.drag
+					# if we want drag we need to stop default behaviour
 					if event.preventDefault
 						event.preventDefault()
 					else
@@ -248,6 +249,26 @@ Events have the following custom data:
 
 				@emitEvent('move', [ @, event, pointer ] )
 
+				if @options.drag
+					dx = if Math.abs(@distance.x) > @options.drag_threshold then @distance.x else 0
+					dy = if Math.abs(@distance.y) > @options.drag_threshold then @distance.y else 0
+					
+					@drag_start = {
+						x: @elm.transform('x')
+						y: @elm.transform('y')
+					}
+
+					if not dx or not dy
+						# we're dragging
+						if not @dragging
+							@dragTouchy(event, pointer)
+
+				if @dragging
+					if not @options.axis or @options.axis == 'x'
+						@elm.transform('x',@drag_start.x + @distance.x)
+					if not @options.axis or @options.axis == 'y'
+						@elm.transform('y',@drag_start.x + @distance.y)
+
 				false
 
 			# ===============
@@ -283,6 +304,7 @@ Events have the following custom data:
 				@end_time = new Date()
 
 				@_cancelHold()
+				@_cancelDrag()
 
 				@emitEvent('end', [ @, event, pointer ] )
 
@@ -290,6 +312,16 @@ Events have the following custom data:
 					@emitEvent('tap', [ @, event, pointer ] )
 
 				false
+
+			# hold event
+			holdTouchy: (event, pointer) ->
+				@holding = true
+				@emitEvent('hold', [ @, event, pointer ] )
+
+			# drag event
+			dragTouchy: (event, pointer) ->
+				@dragging = true
+				@emitEvent('drag', [ @, event, pointer ] )
 
 			# cancel events
 			onpointercancel: (event) ->
@@ -310,15 +342,18 @@ Events have the following custom data:
 			_cancelHold: ->
 				clearTimeout(@_hold_timer)
 				@_hold_timer = null
+				@holding = false
+				@elm.removeClass('holding')
+
+			_cancelDrag: ->
+				@dragging = false
+				@elm.removeClass('dragging')
 
 			_getCurrentTouch: (touches) ->
 				for touch in touches
 					return touch if touch.identifier == @pointerId
 				null
-
-			holdTouchy: (event, pointer) ->
-				@emitEvent('hold', [ @, event, pointer ] )
-
+			
 			enable: ->
 				@enabled = true
 
@@ -328,7 +363,7 @@ Events have the following custom data:
 
 			destroy: ->
 				@disable()
-				@_bindHandles(false)		
+				@_bindHandles(false)
 
 		return Touchy
 
@@ -338,21 +373,26 @@ Events have the following custom data:
 		define([
 			'jquery/jquery'
 			'eventEmitter/EventEmitter',
-			'eventie/eventie'
+			'eventie/eventie',
+			'gsap/gsap',
+			'jquery-transform/jquery-transform'
 		], TouchyDefinition)
 	else if typeof exports == 'object'
 		# commonjs
 		module.exports = TouchyDefinition(
 			require('jquery'),
 			require('wolfy87-eventemitter'),
-    		require('eventie')
+			require('eventie'),
+			require('gsap'),
+			require('jquery-transform')
 		)
 	else
 		# global
 		window.Touchy = TouchyDefinition(
 			window.jQuery,
 			window.EventEmitter,
-   			window.eventie
+			window.eventie,
+			window.TweenMax
 		)
 	
 

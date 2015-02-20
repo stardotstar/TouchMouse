@@ -5,15 +5,13 @@ touchy.js, version 1.0
 Normalise mouse/touch events.
 
 (c) 2015 Copyright Stardotstar.
-project located at https://github.com/stardotstar/TouchMouse.js.
+project located at https://github.com/stardotstar/Touchy.js.
 Licenced under the Apache license (see LICENSE file)
 
 Events have the following custom data:
-* maskedEvent: the event that triggered the pointer event.
-* touch: boolean- is maskedEvent a touch event?
-* mouse: boolean- is maskedEvent a mouse event?
-* x: page-normalized x coordinate of the event.
-* y: page-normalized y coordinate of the event.
+* touchy: the touchy instance that is responding to the event.
+* event: the original javascript event triggered.
+* pointer: the mouse/touch/pointer object responsible for the event.
  */
 
 (function() {
@@ -28,7 +26,7 @@ Events have the following custom data:
       return object;
     };
     noop = function() {};
-    TouchyDefinition = function($, EventEmitter, eventie) {
+    TouchyDefinition = function($, EventEmitter, eventie, TweenMax) {
       var Touchy, chrome_desktop, disableImageDrag, document, dummyDragStart, is_ie8, user_agent;
       document = window.document;
       user_agent = navigator.userAgent.toLowerCase();
@@ -58,11 +56,12 @@ Events have the following custom data:
           this.elm = $(elm);
           this.enabled = true;
           this.touching = false;
+          this.holding = false;
           this.dragging = false;
-          this.options = extend({}, _default_options, options);
+          this.options = $.extend({}, _default_options, options);
           console.log('Initialized Touchy on', this.elm, this.options);
           this._setPosition();
-          this.start_position = extend({}, this.position);
+          this.start_position = $.extend({}, this.position);
           this.start_point = {
             x: 0,
             y: 0
@@ -77,12 +76,13 @@ Events have the following custom data:
         }
 
         _default_options = {
-          allow_scroll: false,
-          axis: null,
+          drag: false,
+          drag_axis: null,
           handle: '',
           hold_interval: 500,
           tap_threshold: 4,
-          double_tap_interval: 500
+          double_tap_interval: 500,
+          drag_threshold: 5
         };
 
         extend(Touchy.prototype, EventEmitter.prototype);
@@ -188,7 +188,7 @@ Events have the following custom data:
           if (!this.enabled) {
             return;
           }
-          if (!this.options.allow_scroll) {
+          if (this.options.drag) {
             if (event.preventDefault) {
               event.preventDefault();
             } else {
@@ -273,6 +273,7 @@ Events have the following custom data:
         };
 
         Touchy.prototype.moveTouchy = function(event, pointer) {
+          var dx, dy;
           this._setPointerPoint(this.current_point, pointer);
           this.distance = {
             x: this.current_point.x - this.start_point.x,
@@ -293,6 +294,27 @@ Events have the following custom data:
             this._cancelHold();
           }
           this.emitEvent('move', [this, event, pointer]);
+          if (this.options.drag) {
+            dx = Math.abs(this.distance.x) > this.options.drag_threshold ? this.distance.x : 0;
+            dy = Math.abs(this.distance.y) > this.options.drag_threshold ? this.distance.y : 0;
+            this.drag_start = {
+              x: this.elm.transform('x'),
+              y: this.elm.transform('y')
+            };
+            if (!dx || !dy) {
+              if (!this.dragging) {
+                this.dragTouchy(event, pointer);
+              }
+            }
+          }
+          if (this.dragging) {
+            if (!this.options.axis || this.options.axis === 'x') {
+              this.elm.transform('x', this.drag_start.x + this.distance.x);
+            }
+            if (!this.options.axis || this.options.axis === 'y') {
+              this.elm.transform('y', this.drag_start.x + this.distance.y);
+            }
+          }
           return false;
         };
 
@@ -328,11 +350,22 @@ Events have the following custom data:
           };
           this.end_time = new Date();
           this._cancelHold();
+          this._cancelDrag();
           this.emitEvent('end', [this, event, pointer]);
           if (!this._cancelled_tap && Math.abs(this.distance.x) <= this.options.tap_threshold && Math.abs(this.distance.y) <= this.options.tap_threshold) {
             this.emitEvent('tap', [this, event, pointer]);
           }
           return false;
+        };
+
+        Touchy.prototype.holdTouchy = function(event, pointer) {
+          this.holding = true;
+          return this.emitEvent('hold', [this, event, pointer]);
+        };
+
+        Touchy.prototype.dragTouchy = function(event, pointer) {
+          this.dragging = true;
+          return this.emitEvent('drag', [this, event, pointer]);
         };
 
         Touchy.prototype.onpointercancel = function(event) {
@@ -357,7 +390,14 @@ Events have the following custom data:
 
         Touchy.prototype._cancelHold = function() {
           clearTimeout(this._hold_timer);
-          return this._hold_timer = null;
+          this._hold_timer = null;
+          this.holding = false;
+          return this.elm.removeClass('holding');
+        };
+
+        Touchy.prototype._cancelDrag = function() {
+          this.dragging = false;
+          return this.elm.removeClass('dragging');
         };
 
         Touchy.prototype._getCurrentTouch = function(touches) {
@@ -369,10 +409,6 @@ Events have the following custom data:
             }
           }
           return null;
-        };
-
-        Touchy.prototype.holdTouchy = function(event, pointer) {
-          return this.emitEvent('hold', [this, event, pointer]);
         };
 
         Touchy.prototype.enable = function() {
@@ -397,11 +433,11 @@ Events have the following custom data:
       return Touchy;
     };
     if (typeof define === 'function' && define.amd) {
-      return define(['jquery/jquery', 'eventEmitter/EventEmitter', 'eventie/eventie'], TouchyDefinition);
+      return define(['jquery/jquery', 'eventEmitter/EventEmitter', 'eventie/eventie', 'gsap/gsap', 'jquery-transform/jquery-transform'], TouchyDefinition);
     } else if (typeof exports === 'object') {
-      return module.exports = TouchyDefinition(require('jquery'), require('wolfy87-eventemitter'), require('eventie'));
+      return module.exports = TouchyDefinition(require('jquery'), require('wolfy87-eventemitter'), require('eventie'), require('gsap'), require('jquery-transform'));
     } else {
-      return window.Touchy = TouchyDefinition(window.jQuery, window.EventEmitter, window.eventie);
+      return window.Touchy = TouchyDefinition(window.jQuery, window.EventEmitter, window.eventie, window.TweenMax);
     }
   })(window);
 
