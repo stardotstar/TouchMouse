@@ -124,10 +124,10 @@ Licenced under the Apache license (see LICENSE file)
 			'gsap/gsap',
 			'jquery-transform/jquery-transform'
 
-		], TouchyDefinition)
+		], TouchySliderDefinition)
 	else if typeof exports == 'object'
 		# commonjs
-		module.exports = TouchyDefinition(
+		module.exports = TouchySliderDefinition(
 			require('jquery'),
 			require('wolfy87-eventemitter'),
 			require('gsap'),
@@ -135,7 +135,7 @@ Licenced under the Apache license (see LICENSE file)
 		)
 	else
 		# global
-		window.TouchySlider = TouchyDefinition(
+		window.TouchySlider = TouchySliderDefinition(
 			window.jQuery,
 			window.EventEmitter,
 			window.TweenMax

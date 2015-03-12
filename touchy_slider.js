@@ -153,11 +153,11 @@ Licenced under the Apache license (see LICENSE file)
       return TouchySlider;
     };
     if (typeof define === 'function' && define.amd) {
-      return define(['jquery/jquery', 'eventEmitter/EventEmitter', 'gsap/gsap', 'jquery-transform/jquery-transform'], TouchyDefinition);
+      return define(['jquery/jquery', 'eventEmitter/EventEmitter', 'gsap/gsap', 'jquery-transform/jquery-transform'], TouchySliderDefinition);
     } else if (typeof exports === 'object') {
-      return module.exports = TouchyDefinition(require('jquery'), require('wolfy87-eventemitter'), require('gsap'), require('jquery-transform'));
+      return module.exports = TouchySliderDefinition(require('jquery'), require('wolfy87-eventemitter'), require('gsap'), require('jquery-transform'));
     } else {
-      return window.TouchySlider = TouchyDefinition(window.jQuery, window.EventEmitter, window.TweenMax);
+      return window.TouchySlider = TouchySliderDefinition(window.jQuery, window.EventEmitter, window.TweenMax);
     }
   })(window);
 
