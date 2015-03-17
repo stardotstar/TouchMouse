@@ -53,13 +53,13 @@ Events have the following custom data:
         var ontouchcancel, post_start_events, _default_options;
 
         function Touchy(elm, options) {
-          this.elm = $(elm);
+          this.elm = $(elm).first();
+          this.elm.data('touchy', this);
           this.enabled = true;
           this.touching = false;
           this.holding = false;
           this.dragging = false;
           this.options = $.extend({}, _default_options, options);
-          console.log('Initialized Touchy on', this.elm, this.options);
           this._setPosition();
           this.start_position = $.extend({}, this.position);
           this.start_point = {
@@ -88,7 +88,12 @@ Events have the following custom data:
         extend(Touchy.prototype, EventEmitter.prototype);
 
         Touchy.prototype._setPosition = function() {
-          return this.position = this.elm.position();
+          var pos;
+          pos = this.elm.position();
+          return this.position = {
+            x: pos.left,
+            y: pos.top
+          };
         };
 
         Touchy.prototype._setupHandles = function() {
@@ -198,10 +203,9 @@ Events have the following custom data:
           this.pointerId = pointer.pointerId !== void 0 ? pointer.pointerId : pointer.identifier;
           this._setPosition();
           this._setPointerPoint(this.start_point, pointer);
+          this._setPointerPoint(this.current_point, pointer);
           this.start_position.x = this.position.x;
           this.start_position.y = this.position.y;
-          this.current_point.x = 0;
-          this.current_point.y = 0;
           this._cancelled_tap = false;
           this.start_time = new Date;
           this._bindPostEvents({
@@ -229,7 +233,6 @@ Events have the following custom data:
           _ref = args.events;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             event = _ref[_i];
-            console.log('binding ' + event);
             eventie.bind(args.node, event, this);
           }
           return this._currentEventArgs = args;
@@ -287,8 +290,6 @@ Events have the following custom data:
           }
           this.position.x = this.start_position.x + this.distance.x;
           this.position.y = this.start_position.y + this.distance.y;
-          this.current_point.x = this.distance.x;
-          this.current_point.y = this.distance.y;
           if (Math.abs(this.distance.x) > this.options.tap_threshold || Math.abs(this.distance.y) > this.options.tap_threshold) {
             this._cancelTap();
             this._cancelHold();

@@ -27,11 +27,16 @@ Licenced under the Apache license (see LICENSE file)
         var _default_options;
 
         function TouchySlider(elm, options) {
-          this.elm = $(elm);
+          this.elm = $(elm).first();
           this.options = $.extend({}, _default_options, options);
-          this._setupTouchyInstance();
-          this._setValue(this.options.initial_value);
+          if (this.options.handle) {
+            this.handle = $(this.options.handle).first();
+          }
+          console.log('Initialized TouchySlider on', this.elm, this.options);
           this._resize();
+          this._setupTouchyInstance();
+          this.value(this.options.initial_value);
+          this._updateHandlePosition();
         }
 
         _default_options = {
@@ -46,17 +51,19 @@ Licenced under the Apache license (see LICENSE file)
           this._touchy = new Touchy(this.elm);
           this._touchy.on('start', (function(_this) {
             return function(t, event, pointer) {
-              return _this._onStart();
+              _this._update();
+              return _this.emitEvent('start', [_this, event, _this._value]);
             };
           })(this));
           this._touchy.on('move', (function(_this) {
             return function(t, event, pointer) {
-              return _this._onMove();
+              return _this._update();
             };
           })(this));
           return this._touchy.on('end', (function(_this) {
             return function(t, event, pointer) {
-              return _this._onEnd();
+              _this._update();
+              return _this.emitEvent('end', [_this, event, _this._value]);
             };
           })(this));
         };
@@ -81,36 +88,40 @@ Licenced under the Apache license (see LICENSE file)
           }
         };
 
-        TouchySlider.prototype._onStart = function(t, event, pointer) {
-          return this._update();
-        };
-
-        TouchySlider.prototype._onMove = function() {
-          return this._update();
-        };
-
-        TouchySlider.prototype._onEnd = function() {
-          return this._update();
-        };
-
         TouchySlider.prototype._update = function() {
-          var handle_pos, pct, pos;
+          var pct, pos, val;
           if (this.options.vertical) {
             pos = this._touchy.current_point.y;
           } else {
             pos = this._touchy.current_point.x;
           }
           pct = Math.round(((pos - this._offset) / this._length) * 100);
-          this.valuePercent(pct);
+          if (pct < 0) {
+            pct = 0;
+          }
+          if (pct > 100) {
+            pct = 100;
+          }
+          val = this._percentToValue(pct);
+          val = this._trimAlignValue(val);
+          if (val !== this._value) {
+            this.value(val);
+            this._updateHandlePosition();
+            return this.emitEvent('update', [this, event, this._value]);
+          }
+        };
+
+        TouchySlider.prototype._updateHandlePosition = function() {
+          var handle_pos;
           if (this.handle) {
-            handle_pos = pos - this._offset - (this._handleLength / 2);
+            handle_pos = (this._value_pct / 100) * this._length;
+            handle_pos -= this._handleLength / 2;
             if (this.options.vertical) {
-              this.handle.css('top', handle_pos);
+              return this.handle.css('top', handle_pos);
             } else {
-              this.handle.css('left', handle_pos);
+              return this.handle.css('left', handle_pos);
             }
           }
-          return this.emitEvent('update', [this, event, this._value]);
         };
 
         TouchySlider.prototype._valueToPercent = function(val) {
@@ -118,7 +129,24 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchySlider.prototype._percentToValue = function(pct) {
-          return ((percent / 100) * (this.options.max_value - this.options.min_value)) + min;
+          return ((pct / 100) * (this.options.max_value - this.options.min_value)) + this.options.min_value;
+        };
+
+        TouchySlider.prototype._trimAlignValue = function(val) {
+          var alignValue, step, valModStep;
+          if (val <= this.options.min_value) {
+            return this.options.min_value;
+          }
+          if (val >= this.options.max_value) {
+            return this.options.max_value;
+          }
+          step = this.options.step > 0 ? this.options.step : 1;
+          valModStep = (val - this.options.min_value) % step;
+          alignValue = val - valModStep;
+          if (Math.abs(valModStep) * 2 >= step) {
+            alignValue += valModStep > 0 ? step : -step;
+          }
+          return parseFloat(alignValue.toFixed(5));
         };
 
         TouchySlider.prototype._setupResize = function() {
@@ -131,18 +159,19 @@ Licenced under the Apache license (see LICENSE file)
 
         TouchySlider.prototype._resize = function() {
           if (this.options.vertical) {
-            this._length = elm.height();
-            this._offset = elm.offset().top;
+            this._length = this.elm.height();
+            this._offset = this.elm.offset().top;
             if (this.handle) {
-              return this._handleLength = this.handle.height();
+              this._handleLength = this.handle.height();
             }
           } else {
-            this._length = elm.width();
-            this._offset = elm.offset().left;
+            this._length = this.elm.width();
+            this._offset = this.elm.offset().left;
             if (this.handle) {
-              return this._handleLength = this.handle.width();
+              this._handleLength = this.handle.width();
             }
           }
+          return this._updateHandlePosition();
         };
 
         extend(TouchySlider.prototype, EventEmitter.prototype);

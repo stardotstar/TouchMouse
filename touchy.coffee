@@ -44,15 +44,16 @@ Events have the following custom data:
 
 		class Touchy
 			constructor: (elm,options) ->
-				@elm = $(elm)
+				@elm = $(elm).first()
+				@elm.data('touchy',@)
 				@enabled = true
 				@touching = false
 				@holding = false
 				@dragging = false
 				@options = $.extend {}, _default_options, options
-				console.log('Initialized Touchy on', @elm ,@options)
+				# console.log('Initialized Touchy on', @elm ,@options)
 
-				@_setPosition()				
+				@_setPosition()
 				@start_position = $.extend {}, @position
 				@start_point = x: 0, y: 0
 				@current_point = x: 0, y: 0
@@ -75,7 +76,10 @@ Events have the following custom data:
 			extend Touchy.prototype, EventEmitter.prototype
 
 			_setPosition: ->
-				@position = @elm.position()
+				pos = @elm.position()
+				@position = 
+					x: pos.left
+					y: pos.top
 
 			_setupHandles: ->
 				@handles = if @options.handle then $(@handle) else @elm
@@ -161,11 +165,9 @@ Events have the following custom data:
 				@pointerId = if pointer.pointerId != undefined then pointer.pointerId else pointer.identifier
 				@_setPosition()
 				@_setPointerPoint(@start_point, pointer)
+				@_setPointerPoint(@current_point, pointer)
 				@start_position.x = @position.x
 				@start_position.y = @position.y
-
-				@current_point.x = 0
-				@current_point.y = 0
 
 				@_cancelled_tap = false
 				@start_time = new Date
@@ -194,7 +196,7 @@ Events have the following custom data:
 
 			_bindPostEvents: (args) ->
 				for event in args.events
-					console.log('binding ' + event)
+					# console.log('binding ' + event)
 					eventie.bind(args.node, event, @)
 				@_currentEventArgs = args
 
@@ -239,9 +241,6 @@ Events have the following custom data:
 
 				@position.x = @start_position.x + @distance.x
 				@position.y = @start_position.y + @distance.y
-
-				@current_point.x = @distance.x
-				@current_point.y = @distance.y
 				
 				if Math.abs(@distance.x) > @options.tap_threshold or Math.abs(@distance.y) > @options.tap_threshold
 					@_cancelTap()
