@@ -50,20 +50,20 @@ Licenced under the Apache license (see LICENSE file)
         TouchySlider.prototype._setupTouchyInstance = function() {
           this._touchy = new Touchy(this.elm);
           this._touchy.on('start', (function(_this) {
-            return function(t, event, pointer) {
+            return function(event, t, pointer) {
               _this._update();
-              return _this.emitEvent('start', [_this, event, _this._value]);
+              return _this.emitEvent('start', [event, _this, _this._value]);
             };
           })(this));
           this._touchy.on('move', (function(_this) {
-            return function(t, event, pointer) {
+            return function(event, t, pointer) {
               return _this._update();
             };
           })(this));
           return this._touchy.on('end', (function(_this) {
-            return function(t, event, pointer) {
+            return function(event, t, pointer) {
               _this._update();
-              return _this.emitEvent('end', [_this, event, _this._value]);
+              return _this.emitEvent('end', [event, _this, _this._value]);
             };
           })(this));
         };

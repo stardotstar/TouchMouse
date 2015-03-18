@@ -186,7 +186,7 @@ Events have the following custom data:
 					@holdTouchy(event, pointer)
 				,@options.hold_interval
 
-				@emitEvent('start', [ @, event, pointer ] )
+				@emitEvent('start', [ event, @, pointer ] )
 
 				false
 
@@ -246,7 +246,7 @@ Events have the following custom data:
 					@_cancelTap()
 					@_cancelHold()
 
-				@emitEvent('move', [ @, event, pointer ] )
+				@emitEvent('move', [ event, @, pointer ] )
 
 				if @options.drag
 					dx = if Math.abs(@distance.x) > @options.drag_threshold then @distance.x else 0
@@ -305,7 +305,7 @@ Events have the following custom data:
 				@_cancelHold()
 				@_cancelDrag()
 
-				@emitEvent('end', [ @, event, pointer ] )
+				@emitEvent('end', [ event, @, pointer ] )
 
 				if not @_cancelled_tap and Math.abs(@distance.x) <= @options.tap_threshold and Math.abs(@distance.y) <= @options.tap_threshold
 					@emitEvent('tap', [ @, event, pointer ] )
@@ -315,12 +315,12 @@ Events have the following custom data:
 			# hold event
 			holdTouchy: (event, pointer) ->
 				@holding = true
-				@emitEvent('hold', [ @, event, pointer ] )
+				@emitEvent('hold', [ event, @, pointer ] )
 
 			# drag event
 			dragTouchy: (event, pointer) ->
 				@dragging = true
-				@emitEvent('drag', [ @, event, pointer ] )
+				@emitEvent('drag', [ event, @, pointer ] )
 
 			# cancel events
 			onpointercancel: (event) ->

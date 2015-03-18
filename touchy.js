@@ -219,7 +219,7 @@ Events have the following custom data:
               return _this.holdTouchy(event, pointer);
             };
           })(this), this.options.hold_interval);
-          this.emitEvent('start', [this, event, pointer]);
+          this.emitEvent('start', [event, this, pointer]);
           return false;
         };
 
@@ -294,7 +294,7 @@ Events have the following custom data:
             this._cancelTap();
             this._cancelHold();
           }
-          this.emitEvent('move', [this, event, pointer]);
+          this.emitEvent('move', [event, this, pointer]);
           if (this.options.drag) {
             dx = Math.abs(this.distance.x) > this.options.drag_threshold ? this.distance.x : 0;
             dy = Math.abs(this.distance.y) > this.options.drag_threshold ? this.distance.y : 0;
@@ -352,7 +352,7 @@ Events have the following custom data:
           this.end_time = new Date();
           this._cancelHold();
           this._cancelDrag();
-          this.emitEvent('end', [this, event, pointer]);
+          this.emitEvent('end', [event, this, pointer]);
           if (!this._cancelled_tap && Math.abs(this.distance.x) <= this.options.tap_threshold && Math.abs(this.distance.y) <= this.options.tap_threshold) {
             this.emitEvent('tap', [this, event, pointer]);
           }
@@ -361,12 +361,12 @@ Events have the following custom data:
 
         Touchy.prototype.holdTouchy = function(event, pointer) {
           this.holding = true;
-          return this.emitEvent('hold', [this, event, pointer]);
+          return this.emitEvent('hold', [event, this, pointer]);
         };
 
         Touchy.prototype.dragTouchy = function(event, pointer) {
           this.dragging = true;
-          return this.emitEvent('drag', [this, event, pointer]);
+          return this.emitEvent('drag', [event, this, pointer]);
         };
 
         Touchy.prototype.onpointercancel = function(event) {

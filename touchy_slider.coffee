@@ -45,16 +45,16 @@ Licenced under the Apache license (see LICENSE file)
 			_setupTouchyInstance: ->
 				@_touchy = new Touchy(@elm)
 
-				@_touchy.on 'start', (t,event,pointer) =>
+				@_touchy.on 'start', (event,t,pointer) =>
 					@_update()
-					@emitEvent('start', [ @, event, @_value ] )
+					@emitEvent('start', [ event, @, @_value ] )
 
-				@_touchy.on 'move', (t,event,pointer) =>
+				@_touchy.on 'move', (event,t,pointer) =>
 					@_update()
 
-				@_touchy.on 'end', (t,event,pointer) =>
+				@_touchy.on 'end', (event,t,pointer) =>
 					@_update()
-					@emitEvent('end', [ @, event, @_value ] )
+					@emitEvent('end', [ event, @, @_value ] )
 
 			value: (val) ->
 				if val?
