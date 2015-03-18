@@ -72,12 +72,14 @@ Events have the following custom data:
           };
           this.start_time = null;
           this._setupHandles();
+          this._setupScrollHandler();
           this.enable();
         }
 
         _default_options = {
           drag: false,
           drag_axis: null,
+          cancel_on_scroll: true,
           handle: '',
           hold_interval: 500,
           tap_threshold: 4,
@@ -94,6 +96,17 @@ Events have the following custom data:
             x: pos.left,
             y: pos.top
           };
+        };
+
+        Touchy.prototype._setupScrollHandler = function() {
+          return eventie.bind(window, 'scroll', this);
+        };
+
+        Touchy.prototype.onscroll = function(event) {
+          if (this.options.cancel_on_scroll && this.touching) {
+            console.log('Cancelled by Scroll');
+            return this.cancelTouchy(event);
+          }
         };
 
         Touchy.prototype._setupHandles = function() {
@@ -340,18 +353,13 @@ Events have the following custom data:
         };
 
         Touchy.prototype.endTouchy = function(event, pointer) {
-          this.touching = false;
-          delete this.pointerId;
-          this._unbindPostEvents();
-          this.elm.removeClass('touching');
+          this._resetTouchy();
           this._setPointerPoint(this.current_point, pointer);
           this.distance = {
             x: this.current_point.x - this.start_point.x,
             y: this.current_point.y - this.start_point.y
           };
           this.end_time = new Date();
-          this._cancelHold();
-          this._cancelDrag();
           this.emitEvent('end', [event, this, pointer]);
           if (!this._cancelled_tap && Math.abs(this.distance.x) <= this.options.tap_threshold && Math.abs(this.distance.y) <= this.options.tap_threshold) {
             this.emitEvent('tap', [this, event, pointer]);
@@ -367,6 +375,21 @@ Events have the following custom data:
         Touchy.prototype.dragTouchy = function(event, pointer) {
           this.dragging = true;
           return this.emitEvent('drag', [event, this, pointer]);
+        };
+
+        Touchy.prototype.cancelTouchy = function(event) {
+          this._resetTouchy();
+          return this.emitEvent('cancel', [event, this]);
+        };
+
+        Touchy.prototype._resetTouchy = function() {
+          this.touching = false;
+          delete this.pointerId;
+          this._unbindPostEvents();
+          this.elm.removeClass('touching');
+          this._cancelTap();
+          this._cancelHold();
+          return this._cancelDrag();
         };
 
         Touchy.prototype.onpointercancel = function(event) {

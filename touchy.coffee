@@ -61,12 +61,14 @@ Events have the following custom data:
 				@start_time = null
 
 				@_setupHandles()
+				@_setupScrollHandler()
 
 				@enable()
 
 			_default_options =
 				drag: false
 				drag_axis: null
+				cancel_on_scroll: true
 				handle: ''
 				hold_interval: 500
 				tap_threshold: 4
@@ -81,15 +83,23 @@ Events have the following custom data:
 					x: pos.left
 					y: pos.top
 
+			_setupScrollHandler: ->
+				eventie.bind(window, 'scroll', @)
+
+			onscroll: (event) ->
+				if @options.cancel_on_scroll and @touching
+					console.log('Cancelled by Scroll')
+					@cancelTouchy(event)
+
 			_setupHandles: ->
 				@handles = if @options.handle then $(@handle) else @elm
 				@_bindHandles(true)
 
 			_bindHandles: (bind = true) ->
-				if window.navigator.msPointerEnabled 
+				if window.navigator.msPointerEnabled
 					binder = @_bindMSPointerEvents
 				else if window.navigator.pointerEnabled
-					binder = @_bindPointerEvents					
+					binder = @_bindPointerEvents
 				else
 					binder = @_bindTouchMouse
 
@@ -289,11 +299,7 @@ Events have the following custom data:
 					@endTouchy(event, touch)
 
 			endTouchy: (event, pointer) ->
-				@touching = false
-				delete @pointerId
-
-				@_unbindPostEvents()
-				@elm.removeClass('touching')
+				@_resetTouchy()
 
 				@_setPointerPoint(@current_point, pointer)
 				@distance = 
@@ -301,9 +307,6 @@ Events have the following custom data:
 					y: @current_point.y - @start_point.y
 
 				@end_time = new Date()
-
-				@_cancelHold()
-				@_cancelDrag()
 
 				@emitEvent('end', [ event, @, pointer ] )
 
@@ -321,6 +324,22 @@ Events have the following custom data:
 			dragTouchy: (event, pointer) ->
 				@dragging = true
 				@emitEvent('drag', [ event, @, pointer ] )
+
+			cancelTouchy: (event) ->
+				# cancel touchy premeturely
+				@_resetTouchy()
+				@emitEvent('cancel', [ event, @ ] )
+
+			_resetTouchy: ->
+				@touching = false
+				delete @pointerId
+
+				@_unbindPostEvents()
+				@elm.removeClass('touching')
+
+				@_cancelTap()
+				@_cancelHold()
+				@_cancelDrag()
 
 			# cancel events
 			onpointercancel: (event) ->
