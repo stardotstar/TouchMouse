@@ -51,7 +51,7 @@ Events have the following custom data:
 				@holding = false
 				@dragging = false
 				@options = $.extend {}, _default_options, options
-				# console.log('Initialized Touchy on', @elm ,@options)
+				console.log('Initialized Touchy on', @elm ,@options)
 
 				@_setPosition()
 				@start_position = $.extend {}, @position
@@ -196,7 +196,7 @@ Events have the following custom data:
 					@holdTouchy(event, pointer)
 				,@options.hold_interval
 
-				@emitEvent('start', [ event, @, pointer ] )
+				@_triggerElementEvent('start', event, @, pointer)
 
 				false
 
@@ -256,7 +256,7 @@ Events have the following custom data:
 					@_cancelTap()
 					@_cancelHold()
 
-				@emitEvent('move', [ event, @, pointer ] )
+				@_triggerElementEvent('move', event, @, pointer)
 
 				if @options.drag
 					dx = if Math.abs(@distance.x) > @options.drag_threshold then @distance.x else 0
@@ -308,27 +308,37 @@ Events have the following custom data:
 
 				@end_time = new Date()
 
-				@emitEvent('end', [ event, @, pointer ] )
+				@_triggerElementEvent('end', event, @, pointer)
 
 				if not @_cancelled_tap and Math.abs(@distance.x) <= @options.tap_threshold and Math.abs(@distance.y) <= @options.tap_threshold
-					@emitEvent('tap', [ @, event, pointer ] )
+					@_triggerElementEvent('tap', event, @, pointer)
 
 				false
 
 			# hold event
 			holdTouchy: (event, pointer) ->
 				@holding = true
-				@emitEvent('hold', [ event, @, pointer ] )
+				@_triggerElementEvent('hold', event, @, pointer)
 
 			# drag event
 			dragTouchy: (event, pointer) ->
 				@dragging = true
-				@emitEvent('drag', [ event, @, pointer ] )
+				@_triggerElementEvent('drag', event, @, pointer)
 
 			cancelTouchy: (event) ->
 				# cancel touchy premeturely
 				@_resetTouchy()
-				@emitEvent('cancel', [ event, @ ] )
+				@_triggerElementEvent('cancel', event, @)
+
+			_triggerElementEvent: (eventName, originalEvent, instance, pointer) ->
+				@emitEvent(eventName, [ originalEvent, instance, pointer ] )
+				# now trigger an event on the element
+				custom_event = $.Event('touchy:'+ eventName)
+				@elm.trigger(custom_event, [ instance, pointer ])
+				if custom_event.isDefaultPrevented()
+					# preventing default
+					originalEvent.preventDefault()
+					originalEvent.stopPropagation()
 
 			_resetTouchy: ->
 				@touching = false

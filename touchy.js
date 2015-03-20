@@ -60,6 +60,7 @@ Events have the following custom data:
           this.holding = false;
           this.dragging = false;
           this.options = $.extend({}, _default_options, options);
+          console.log('Initialized Touchy on', this.elm, this.options);
           this._setPosition();
           this.start_position = $.extend({}, this.position);
           this.start_point = {
@@ -232,7 +233,7 @@ Events have the following custom data:
               return _this.holdTouchy(event, pointer);
             };
           })(this), this.options.hold_interval);
-          this.emitEvent('start', [event, this, pointer]);
+          this._triggerElementEvent('start', event, this, pointer);
           return false;
         };
 
@@ -307,7 +308,7 @@ Events have the following custom data:
             this._cancelTap();
             this._cancelHold();
           }
-          this.emitEvent('move', [event, this, pointer]);
+          this._triggerElementEvent('move', event, this, pointer);
           if (this.options.drag) {
             dx = Math.abs(this.distance.x) > this.options.drag_threshold ? this.distance.x : 0;
             dy = Math.abs(this.distance.y) > this.options.drag_threshold ? this.distance.y : 0;
@@ -360,26 +361,37 @@ Events have the following custom data:
             y: this.current_point.y - this.start_point.y
           };
           this.end_time = new Date();
-          this.emitEvent('end', [event, this, pointer]);
+          this._triggerElementEvent('end', event, this, pointer);
           if (!this._cancelled_tap && Math.abs(this.distance.x) <= this.options.tap_threshold && Math.abs(this.distance.y) <= this.options.tap_threshold) {
-            this.emitEvent('tap', [this, event, pointer]);
+            this._triggerElementEvent('tap', event, this, pointer);
           }
           return false;
         };
 
         Touchy.prototype.holdTouchy = function(event, pointer) {
           this.holding = true;
-          return this.emitEvent('hold', [event, this, pointer]);
+          return this._triggerElementEvent('hold', event, this, pointer);
         };
 
         Touchy.prototype.dragTouchy = function(event, pointer) {
           this.dragging = true;
-          return this.emitEvent('drag', [event, this, pointer]);
+          return this._triggerElementEvent('drag', event, this, pointer);
         };
 
         Touchy.prototype.cancelTouchy = function(event) {
           this._resetTouchy();
-          return this.emitEvent('cancel', [event, this]);
+          return this._triggerElementEvent('cancel', event, this);
+        };
+
+        Touchy.prototype._triggerElementEvent = function(eventName, originalEvent, instance, pointer) {
+          var custom_event;
+          this.emitEvent(eventName, [originalEvent, instance, pointer]);
+          custom_event = $.Event('touchy:' + eventName);
+          this.elm.trigger(custom_event, [instance, pointer]);
+          if (custom_event.isDefaultPrevented()) {
+            originalEvent.preventDefault();
+            return originalEvent.stopPropagation();
+          }
         };
 
         Touchy.prototype._resetTouchy = function() {
