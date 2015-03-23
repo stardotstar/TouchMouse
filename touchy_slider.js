@@ -53,29 +53,36 @@ Licenced under the Apache license (see LICENSE file)
           this._touchy.on('start', (function(_this) {
             return function(event, t, pointer) {
               _this._update();
-              if (event.target === _this.handle.get(0)) {
-                _this.handle.addClass('touching');
-              }
+              _this._setHandleClass(true);
               return _this.emitEvent('start', [event, _this, _this._value]);
             };
           })(this));
           this._touchy.on('move', (function(_this) {
             return function(event, t, pointer) {
               _this._update();
-              if (event.target === _this.handle.get(0)) {
-                return _this.handle.addClass('touching');
-              }
+              return _this._setHandleClass(true);
             };
           })(this));
           return this._touchy.on('end', (function(_this) {
             return function(event, t, pointer) {
               _this._update();
-              if (event.target === _this.handle.get(0)) {
-                _this.handle.removeClass('touching');
-              }
+              _this._setHandleClass(false);
               return _this.emitEvent('end', [event, _this, _this._value]);
             };
           })(this));
+        };
+
+        TouchySlider.prototype._setHandleClass = function(add) {
+          if (add == null) {
+            add = false;
+          }
+          if (event.target === this.handle.get(0)) {
+            if (add) {
+              return this.handle.addClass('touching');
+            } else {
+              return this.handle.removeClass('touching');
+            }
+          }
         };
 
         TouchySlider.prototype.value = function(val) {

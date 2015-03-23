@@ -49,20 +49,24 @@ Licenced under the Apache license (see LICENSE file)
 
 				@_touchy.on 'start', (event,t,pointer) =>
 					@_update()
-					if event.target == @handle.get(0)
-						@handle.addClass('touching')
+					@_setHandleClass(true)
 					@emitEvent('start', [ event, @, @_value ] )
 
 				@_touchy.on 'move', (event,t,pointer) =>
 					@_update()
-					if event.target == @handle.get(0)
-						@handle.addClass('touching')
+					@_setHandleClass(true)
 
 				@_touchy.on 'end', (event,t,pointer) =>
 					@_update()
-					if event.target == @handle.get(0)
-						@handle.removeClass('touching')
+					@_setHandleClass(false)
 					@emitEvent('end', [ event, @, @_value ] )
+
+			_setHandleClass: (add = false) ->
+				if event.target == @handle.get(0)
+					if add
+						@handle.addClass('touching')
+					else
+						@handle.removeClass('touching')
 
 			value: (val) ->
 				if val?
