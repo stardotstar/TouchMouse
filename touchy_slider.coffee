@@ -31,11 +31,14 @@ Licenced under the Apache license (see LICENSE file)
 
 				console.log('Initialized TouchySlider on', @elm ,@options)
 
+				@_createSlider()
 				@_setupResize()
 				@_setupTouchyInstance()
 				@_createLabels(@options.labels)
 				@value(@options.initial_value)
 				@_updateHandlePosition()
+				@_createBubble() if @options.show_bubble
+				@_updateBubble()
 				@elm.css('opacity',1)
 
 			_default_options =
@@ -44,6 +47,7 @@ Licenced under the Apache license (see LICENSE file)
 				max_value: 100
 				initial_value: 0
 				handle: ''
+				show_bubble: true
 				values: null
 				labels: []
 
@@ -64,6 +68,10 @@ Licenced under the Apache license (see LICENSE file)
 					@_update()
 					@_setHandleClass(false)
 					@emitEvent('end', [ event, @, @_value ] )
+
+			_createSlider: ->
+				@elm.css
+					position: 'relative'
 
 			_createLabels: (labels) ->
 
@@ -90,8 +98,12 @@ Licenced under the Apache license (see LICENSE file)
 
 				@elm.append(@label_elm)
 
-			_createLabel: (label,i,label_width) ->
-				
+			_createBubble: (values) ->
+				return unless @options.show_bubble
+				@bubble_elm = $("<div class='slider_bubble'>")
+				@bubble_elm.css
+					position: 'absolute'
+				@elm.append(@bubble_elm)
 
 			_setHandleClass: (add = false) ->
 				if event.target == @handle.get(0)
@@ -133,6 +145,7 @@ Licenced under the Apache license (see LICENSE file)
 					# value has changed
 					@value(val)
 					@_updateHandlePosition()
+					@_updateBubble()
 					@emitEvent('update', [ @, event, @_value ] )
 
 			_updateHandlePosition: ->
@@ -144,6 +157,19 @@ Licenced under the Apache license (see LICENSE file)
 						@handle.css('top',handle_pos)
 					else
 						@handle.css('left',handle_pos)
+
+			_updateBubble: ->
+				if @options.show_bubble and @bubble_elm
+					# set value
+					@bubble_elm.text(@_value)
+					# move the handle
+					bubble_pos = (@_value_pct / 100) * @_length
+					bubble_pos -= @bubble_elm.outerWidth() / 2
+					if @options.vertical
+						@bubble_elm.css('top',bubble_pos)
+					else
+						@bubble_elm.css('left',bubble_pos)
+					
 
 			_valueToPercent: (val) ->
 				((val - @options.min_value) / (@options.max_value - @options.min_value)) * 100

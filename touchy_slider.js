@@ -33,11 +33,16 @@ Licenced under the Apache license (see LICENSE file)
             this.handle = $(this.options.handle).first();
           }
           console.log('Initialized TouchySlider on', this.elm, this.options);
+          this._createSlider();
           this._setupResize();
           this._setupTouchyInstance();
           this._createLabels(this.options.labels);
           this.value(this.options.initial_value);
           this._updateHandlePosition();
+          if (this.options.show_bubble) {
+            this._createBubble();
+          }
+          this._updateBubble();
           this.elm.css('opacity', 1);
         }
 
@@ -47,6 +52,7 @@ Licenced under the Apache license (see LICENSE file)
           max_value: 100,
           initial_value: 0,
           handle: '',
+          show_bubble: true,
           values: null,
           labels: []
         };
@@ -77,6 +83,12 @@ Licenced under the Apache license (see LICENSE file)
           })(this));
         };
 
+        TouchySlider.prototype._createSlider = function() {
+          return this.elm.css({
+            position: 'relative'
+          });
+        };
+
         TouchySlider.prototype._createLabels = function(labels) {
           var i, label, label_width, newelm, _i, _len;
           label_width = (100 / labels.length).toFixed(4);
@@ -103,7 +115,16 @@ Licenced under the Apache license (see LICENSE file)
           return this.elm.append(this.label_elm);
         };
 
-        TouchySlider.prototype._createLabel = function(label, i, label_width) {};
+        TouchySlider.prototype._createBubble = function(values) {
+          if (!this.options.show_bubble) {
+            return;
+          }
+          this.bubble_elm = $("<div class='slider_bubble'>");
+          this.bubble_elm.css({
+            position: 'absolute'
+          });
+          return this.elm.append(this.bubble_elm);
+        };
 
         TouchySlider.prototype._setHandleClass = function(add) {
           if (add == null) {
@@ -157,6 +178,7 @@ Licenced under the Apache license (see LICENSE file)
           if (val !== this._value) {
             this.value(val);
             this._updateHandlePosition();
+            this._updateBubble();
             return this.emitEvent('update', [this, event, this._value]);
           }
         };
@@ -170,6 +192,20 @@ Licenced under the Apache license (see LICENSE file)
               return this.handle.css('top', handle_pos);
             } else {
               return this.handle.css('left', handle_pos);
+            }
+          }
+        };
+
+        TouchySlider.prototype._updateBubble = function() {
+          var bubble_pos;
+          if (this.options.show_bubble && this.bubble_elm) {
+            this.bubble_elm.text(this._value);
+            bubble_pos = (this._value_pct / 100) * this._length;
+            bubble_pos -= this.bubble_elm.outerWidth() / 2;
+            if (this.options.vertical) {
+              return this.bubble_elm.css('top', bubble_pos);
+            } else {
+              return this.bubble_elm.css('left', bubble_pos);
             }
           }
         };
