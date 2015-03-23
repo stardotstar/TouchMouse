@@ -67,13 +67,13 @@ Licenced under the Apache license (see LICENSE file)
 
 			_createLabels: (labels) ->
 
-				label_width = @_length / labels.length
+				label_width = (100 / labels.length).toFixed(4)
 
 				@label_elm = $("<div class='slider_labels'>")
 				for label,i in labels
 					newelm = $("<div class='slider_label'>")
 					newelm.css
-						width: label_width
+						width: label_width + '%'
 						float: 'left'
 						textAlign: 'center'
 

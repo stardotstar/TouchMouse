@@ -79,13 +79,13 @@ Licenced under the Apache license (see LICENSE file)
 
         TouchySlider.prototype._createLabels = function(labels) {
           var i, label, label_width, newelm, _i, _len;
-          label_width = this._length / labels.length;
+          label_width = (100 / labels.length).toFixed(4);
           this.label_elm = $("<div class='slider_labels'>");
           for (i = _i = 0, _len = labels.length; _i < _len; i = ++_i) {
             label = labels[i];
             newelm = $("<div class='slider_label'>");
             newelm.css({
-              width: label_width,
+              width: label_width + '%',
               float: 'left',
               textAlign: 'center'
             });
