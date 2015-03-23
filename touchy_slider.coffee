@@ -24,16 +24,18 @@ Licenced under the Apache license (see LICENSE file)
 		class TouchySlider
 			constructor: (elm,options) ->
 				@elm = $(elm).first()
+
 				@options = $.extend {}, _default_options, options
 
 				@handle = $(@options.handle).first() if @options.handle
 
 				console.log('Initialized TouchySlider on', @elm ,@options)
 
-				@_resize()
+				@_setupResize()
 				@_setupTouchyInstance()
 				@value(@options.initial_value)
 				@_updateHandlePosition()
+				@elm.css('opacity',1)
 
 			_default_options =
 				vertical: false
@@ -47,13 +49,19 @@ Licenced under the Apache license (see LICENSE file)
 
 				@_touchy.on 'start', (event,t,pointer) =>
 					@_update()
+					if event.target == @handle.get(0)
+						@handle.addClass('touching')
 					@emitEvent('start', [ event, @, @_value ] )
 
 				@_touchy.on 'move', (event,t,pointer) =>
 					@_update()
+					if event.target == @handle.get(0)
+						@handle.addClass('touching')
 
 				@_touchy.on 'end', (event,t,pointer) =>
 					@_update()
+					if event.target == @handle.get(0)
+						@handle.removeClass('touching')
 					@emitEvent('end', [ event, @, @_value ] )
 
 			value: (val) ->
@@ -128,6 +136,7 @@ Licenced under the Apache license (see LICENSE file)
 			_setupResize: ->
 				$(window).on 'resize', =>
 					@_resize()
+				@_resize()
 
 			_resize: ->
 				if @options.vertical

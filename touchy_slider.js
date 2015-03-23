@@ -33,10 +33,11 @@ Licenced under the Apache license (see LICENSE file)
             this.handle = $(this.options.handle).first();
           }
           console.log('Initialized TouchySlider on', this.elm, this.options);
-          this._resize();
+          this._setupResize();
           this._setupTouchyInstance();
           this.value(this.options.initial_value);
           this._updateHandlePosition();
+          this.elm.css('opacity', 1);
         }
 
         _default_options = {
@@ -52,17 +53,26 @@ Licenced under the Apache license (see LICENSE file)
           this._touchy.on('start', (function(_this) {
             return function(event, t, pointer) {
               _this._update();
+              if (event.target === _this.handle.get(0)) {
+                _this.handle.addClass('touching');
+              }
               return _this.emitEvent('start', [event, _this, _this._value]);
             };
           })(this));
           this._touchy.on('move', (function(_this) {
             return function(event, t, pointer) {
-              return _this._update();
+              _this._update();
+              if (event.target === _this.handle.get(0)) {
+                return _this.handle.addClass('touching');
+              }
             };
           })(this));
           return this._touchy.on('end', (function(_this) {
             return function(event, t, pointer) {
               _this._update();
+              if (event.target === _this.handle.get(0)) {
+                _this.handle.removeClass('touching');
+              }
               return _this.emitEvent('end', [event, _this, _this._value]);
             };
           })(this));
@@ -150,11 +160,12 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchySlider.prototype._setupResize = function() {
-          return $(window).on('resize', (function(_this) {
+          $(window).on('resize', (function(_this) {
             return function() {
               return _this._resize();
             };
           })(this));
+          return this._resize();
         };
 
         TouchySlider.prototype._resize = function() {
