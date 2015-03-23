@@ -66,8 +66,32 @@ Licenced under the Apache license (see LICENSE file)
 					@emitEvent('end', [ event, @, @_value ] )
 
 			_createLabels: (labels) ->
-				for label in labels
-					@elm.append("<div class='slider_label'>#{label}</div>")
+
+				label_width = @_length / labels.length
+
+				@label_elm = $("<div class='slider_labels'>")
+				for label,i in labels
+					newelm = $("<div class='slider_label'>")
+					newelm.css
+						width: label_width
+						float: 'left'
+						textAlign: 'center'
+
+					if i == 0
+						newelm.css 'textAlign', 'left'
+						
+					else if i == labels.length-1
+						newelm.css
+							float: 'right'
+							textAlign: 'right'
+
+					newelm.text(label)
+					@label_elm.append(newelm)
+
+				@elm.append(@label_elm)
+
+			_createLabel: (label,i,label_width) ->
+				
 
 			_setHandleClass: (add = false) ->
 				if event.target == @handle.get(0)

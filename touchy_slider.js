@@ -78,14 +78,32 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchySlider.prototype._createLabels = function(labels) {
-          var label, _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = labels.length; _i < _len; _i++) {
-            label = labels[_i];
-            _results.push(this.elm.append("<div class='slider_label'>" + label + "</div>"));
+          var i, label, label_width, newelm, _i, _len;
+          label_width = this._length / labels.length;
+          this.label_elm = $("<div class='slider_labels'>");
+          for (i = _i = 0, _len = labels.length; _i < _len; i = ++_i) {
+            label = labels[i];
+            newelm = $("<div class='slider_label'>");
+            newelm.css({
+              width: label_width,
+              float: 'left',
+              textAlign: 'center'
+            });
+            if (i === 0) {
+              newelm.css('textAlign', 'left');
+            } else if (i === labels.length - 1) {
+              newelm.css({
+                float: 'right',
+                textAlign: 'right'
+              });
+            }
+            newelm.text(label);
+            this.label_elm.append(newelm);
           }
-          return _results;
+          return this.elm.append(this.label_elm);
         };
+
+        TouchySlider.prototype._createLabel = function(label, i, label_width) {};
 
         TouchySlider.prototype._setHandleClass = function(add) {
           if (add == null) {
