@@ -35,6 +35,7 @@ Licenced under the Apache license (see LICENSE file)
           console.log('Initialized TouchySlider on', this.elm, this.options);
           this._setupResize();
           this._setupTouchyInstance();
+          this._createLabels(this.options.labels);
           this.value(this.options.initial_value);
           this._updateHandlePosition();
           this.elm.css('opacity', 1);
@@ -45,11 +46,15 @@ Licenced under the Apache license (see LICENSE file)
           min_value: 0,
           max_value: 100,
           initial_value: 0,
-          handle: ''
+          handle: '',
+          values: null,
+          labels: []
         };
 
         TouchySlider.prototype._setupTouchyInstance = function() {
-          this._touchy = new Touchy(this.elm);
+          this._touchy = new Touchy(this.elm, {
+            cancel_on_scroll: false
+          });
           this._touchy.on('start', (function(_this) {
             return function(event, t, pointer) {
               _this._update();
@@ -70,6 +75,16 @@ Licenced under the Apache license (see LICENSE file)
               return _this.emitEvent('end', [event, _this, _this._value]);
             };
           })(this));
+        };
+
+        TouchySlider.prototype._createLabels = function(labels) {
+          var label, _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = labels.length; _i < _len; _i++) {
+            label = labels[_i];
+            _results.push(this.elm.append("<div class='slider_label'>" + label + "</div>"));
+          }
+          return _results;
         };
 
         TouchySlider.prototype._setHandleClass = function(add) {

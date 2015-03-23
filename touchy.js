@@ -207,7 +207,7 @@ Events have the following custom data:
           if (!this.enabled) {
             return;
           }
-          if (this.options.drag) {
+          if (this.options.drag || !this.options.cancel_on_scroll) {
             if (event.preventDefault) {
               event.preventDefault();
             } else {

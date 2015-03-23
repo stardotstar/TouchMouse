@@ -165,7 +165,7 @@ Events have the following custom data:
 			startTouchy: (event, pointer) ->
 				return unless @enabled
 
-				if @options.drag
+				if @options.drag or not @options.cancel_on_scroll
 					# if we want drag we need to stop default behaviour
 					if event.preventDefault
 						event.preventDefault()

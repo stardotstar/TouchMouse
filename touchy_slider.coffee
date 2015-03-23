@@ -33,6 +33,7 @@ Licenced under the Apache license (see LICENSE file)
 
 				@_setupResize()
 				@_setupTouchyInstance()
+				@_createLabels(@options.labels)
 				@value(@options.initial_value)
 				@_updateHandlePosition()
 				@elm.css('opacity',1)
@@ -43,9 +44,12 @@ Licenced under the Apache license (see LICENSE file)
 				max_value: 100
 				initial_value: 0
 				handle: ''
+				values: null
+				labels: []
 
 			_setupTouchyInstance: ->
-				@_touchy = new Touchy(@elm)
+				@_touchy = new Touchy @elm,
+					cancel_on_scroll: false
 
 				@_touchy.on 'start', (event,t,pointer) =>
 					@_update()
@@ -60,6 +64,10 @@ Licenced under the Apache license (see LICENSE file)
 					@_update()
 					@_setHandleClass(false)
 					@emitEvent('end', [ event, @, @_value ] )
+
+			_createLabels: (labels) ->
+				for label in labels
+					@elm.append("<div class='slider_label'>#{label}</div>")
 
 			_setHandleClass: (add = false) ->
 				if event.target == @handle.get(0)
