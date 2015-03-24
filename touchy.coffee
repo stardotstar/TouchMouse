@@ -39,8 +39,8 @@ Events have the following custom data:
 			if handle_elm.nodeName == 'IMG'
 				handle_elm.ondragstart = dummyDragStart
 
-			for imgs in $(handle).find('img')
-				im.ondragstart = dummyDragStart
+			for img in $(handle).find('img')
+				img.ondragstart = dummyDragStart
 
 		class Touchy
 			constructor: (elm,options) ->

@@ -36,7 +36,7 @@ Events have the following custom data:
         return false;
       };
       disableImageDrag = is_ie8 ? $.noop() : function(handle) {
-        var handle_elm, imgs, _i, _len, _ref, _results;
+        var handle_elm, img, _i, _len, _ref, _results;
         handle_elm = handle;
         if (handle_elm.nodeName === 'IMG') {
           handle_elm.ondragstart = dummyDragStart;
@@ -44,8 +44,8 @@ Events have the following custom data:
         _ref = $(handle).find('img');
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          imgs = _ref[_i];
-          _results.push(im.ondragstart = dummyDragStart);
+          img = _ref[_i];
+          _results.push(img.ondragstart = dummyDragStart);
         }
         return _results;
       };
