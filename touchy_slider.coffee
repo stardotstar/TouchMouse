@@ -123,7 +123,6 @@ Licenced under the Apache license (see LICENSE file)
 				if @options.values and @options.values.length
 					@options.min_value = 0
 					@options.max_value = @options.values.length-1
-					@options.initial_value = 0
 
 			_setHandleClass: (add = false) ->
 				if event.target == @handle.get(0)

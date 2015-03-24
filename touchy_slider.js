@@ -140,8 +140,7 @@ Licenced under the Apache license (see LICENSE file)
         TouchySlider.prototype._configureValues = function() {
           if (this.options.values && this.options.values.length) {
             this.options.min_value = 0;
-            this.options.max_value = this.options.values.length - 1;
-            return this.options.initial_value = 0;
+            return this.options.max_value = this.options.values.length - 1;
           }
         };
 
