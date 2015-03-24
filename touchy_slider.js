@@ -44,6 +44,7 @@ Licenced under the Apache license (see LICENSE file)
             this._createBubble();
           }
           this._updateBubble();
+          this.emitEvent('init', [this, this._value]);
           this.elm.css('opacity', 1);
         }
 

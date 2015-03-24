@@ -40,6 +40,9 @@ Licenced under the Apache license (see LICENSE file)
 				@_updateHandlePosition()
 				@_createBubble() if @options.show_bubble
 				@_updateBubble()
+
+				@emitEvent('init', [ @, @_value ] )
+
 				@elm.css('opacity',1)
 
 			_default_options =
