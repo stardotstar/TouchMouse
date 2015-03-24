@@ -36,6 +36,7 @@ Licenced under the Apache license (see LICENSE file)
           this._createSlider();
           this._setupResize();
           this._setupTouchyInstance();
+          this._configureValues();
           this._createLabels(this.options.labels);
           this.value(this.options.initial_value);
           this._updateHandlePosition();
@@ -134,6 +135,14 @@ Licenced under the Apache license (see LICENSE file)
             position: 'absolute'
           });
           return this.elm.append(this.bubble_elm);
+        };
+
+        TouchySlider.prototype._configureValues = function() {
+          if (this.options.values && this.options.values.length) {
+            this.options.min_value = 0;
+            this.options.max_value = this.options.values.length - 1;
+            return this.options.initial_value = 0;
+          }
         };
 
         TouchySlider.prototype._setHandleClass = function(add) {

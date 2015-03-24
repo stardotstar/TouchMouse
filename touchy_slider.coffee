@@ -34,6 +34,7 @@ Licenced under the Apache license (see LICENSE file)
 				@_createSlider()
 				@_setupResize()
 				@_setupTouchyInstance()
+				@_configureValues()
 				@_createLabels(@options.labels)
 				@value(@options.initial_value)
 				@_updateHandlePosition()
@@ -117,6 +118,12 @@ Licenced under the Apache license (see LICENSE file)
 				@bubble_elm.css
 					position: 'absolute'
 				@elm.append(@bubble_elm)
+
+			_configureValues: ->
+				if @options.values and @options.values.length
+					@options.min_value = 0
+					@options.max_value = @options.values.length-1
+					@options.initial_value = 0
 
 			_setHandleClass: (add = false) ->
 				if event.target == @handle.get(0)
