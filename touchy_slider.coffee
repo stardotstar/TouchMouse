@@ -48,6 +48,8 @@ Licenced under the Apache license (see LICENSE file)
 				initial_value: 0
 				handle: null
 				show_bubble: true
+				bubble_suffix: ''
+				bubble_prefix: ''
 				values: null
 				labels: []
 
@@ -109,7 +111,7 @@ Licenced under the Apache license (see LICENSE file)
 
 				@elm.append(@label_elm)
 
-			_createBubble: (values) ->
+			_createBubble: ->
 				return unless @options.show_bubble
 				@bubble_elm = $("<div class='slider_bubble'>")
 				@bubble_elm.css
@@ -171,8 +173,11 @@ Licenced under the Apache license (see LICENSE file)
 
 			_updateBubble: ->
 				if @options.show_bubble and @bubble_elm
+
+					bubble_text = if @options.values and @options.values.length then @options.values[@_value] else @_value
+
 					# set value
-					@bubble_elm.text(@_value)
+					@bubble_elm.text('' + @options.bubble_prefix + bubble_text + @options.bubble_suffix)
 					# move the handle
 					bubble_pos = (@_value_pct / 100) * @_length
 					bubble_pos -= @bubble_elm.outerWidth() / 2

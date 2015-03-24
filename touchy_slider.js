@@ -53,6 +53,8 @@ Licenced under the Apache license (see LICENSE file)
           initial_value: 0,
           handle: null,
           show_bubble: true,
+          bubble_suffix: '',
+          bubble_prefix: '',
           values: null,
           labels: []
         };
@@ -123,7 +125,7 @@ Licenced under the Apache license (see LICENSE file)
           return this.elm.append(this.label_elm);
         };
 
-        TouchySlider.prototype._createBubble = function(values) {
+        TouchySlider.prototype._createBubble = function() {
           if (!this.options.show_bubble) {
             return;
           }
@@ -205,9 +207,10 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchySlider.prototype._updateBubble = function() {
-          var bubble_pos;
+          var bubble_pos, bubble_text;
           if (this.options.show_bubble && this.bubble_elm) {
-            this.bubble_elm.text(this._value);
+            bubble_text = this.options.values && this.options.values.length ? this.options.values[this._value] : this._value;
+            this.bubble_elm.text('' + this.options.bubble_prefix + bubble_text + this.options.bubble_suffix);
             bubble_pos = (this._value_pct / 100) * this._length;
             bubble_pos -= this.bubble_elm.outerWidth() / 2;
             if (this.options.vertical) {
