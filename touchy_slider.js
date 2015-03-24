@@ -51,7 +51,7 @@ Licenced under the Apache license (see LICENSE file)
           min_value: 0,
           max_value: 100,
           initial_value: 0,
-          handle: '',
+          handle: null,
           show_bubble: true,
           values: null,
           labels: []
@@ -84,9 +84,17 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchySlider.prototype._createSlider = function() {
-          return this.elm.css({
+          this.elm.addClass('slider');
+          this.elm.addClass(this.options.vertical ? 'slider_v' : 'slider_h');
+          this.elm.css({
             position: 'relative'
           });
+          this.bar_elm = $("<div class='slider_bar'>");
+          this.elm.append(this.bar_elm);
+          if (!this.handle) {
+            this.handle = $("<div class='slider_handle'>");
+            return this.elm.append(this.handle);
+          }
         };
 
         TouchySlider.prototype._createLabels = function(labels) {

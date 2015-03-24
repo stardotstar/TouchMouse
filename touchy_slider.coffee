@@ -46,7 +46,7 @@ Licenced under the Apache license (see LICENSE file)
 				min_value: 0
 				max_value: 100
 				initial_value: 0
-				handle: ''
+				handle: null
 				show_bubble: true
 				values: null
 				labels: []
@@ -70,8 +70,19 @@ Licenced under the Apache license (see LICENSE file)
 					@emitEvent('end', [ event, @, @_value ] )
 
 			_createSlider: ->
+				@elm.addClass('slider')
+				@elm.addClass(if @options.vertical then 'slider_v' else 'slider_h')
 				@elm.css
 					position: 'relative'
+
+				# create the bar
+				@bar_elm = $("<div class='slider_bar'>")
+				@elm.append(@bar_elm)
+
+				# create the handle
+				if not @handle
+					@handle = $("<div class='slider_handle'>")
+					@elm.append(@handle)
 
 			_createLabels: (labels) ->
 
