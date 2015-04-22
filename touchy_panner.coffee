@@ -29,13 +29,12 @@ Licenced under the Apache license (see LICENSE file)
 
 				console.log('Initialized TouchyPanner on', @elm ,@options)
 
-				@_createPanner()
+				@_configurePanner()
 				@_setupTouchyInstance()
 				@_configureOptions()
 				@value(@options.initial_index)
-				@_updateHandlePosition()
 
-				@emitEvent('init', [ @, @_value ] )
+				@emitEvent('init', [ @ ] )
 
 				@elm.css('opacity',1)
 
@@ -52,93 +51,181 @@ Licenced under the Apache license (see LICENSE file)
 					cancel_on_scroll: false
 
 				@_touchy.on 'start', (event,t,pointer) =>
-					@emitEvent('panstart', [ event, @, @_value ] )
+					@_onStart(event,pointer)
+					# @emitEvent('panstart', [ event, @, @_value ] )
 
 				@_touchy.on 'move', (event,t,pointer) =>
-					@emitEvent('panmove', [ event, @, @_value ] )
+					@_onMove(event,pointer)
+					# @emitEvent('panmove', [ event, @, @_value ] )
 
 				@_touchy.on 'end', (event,t,pointer) =>
-					@emitEvent('panend', [ event, @, @_value ] )
+					@_onEnd(event,pointer)
+					# @emitEvent('panend', [ event, @, @_value ] )
 
-			_createPanner: ->
+			_configurePanner: ->
 				@elm.addClass('panner')
 				@elm.addClass(if @options.vertical then 'panner_v' else 'panner_h')
-				@elm.css
+				
+				@_options_elm = @elm.find(@options.container_elm)
+
+				@_options_elm.css
 					position: 'relative'
 
-			_configureOptions: ->
-				if @options.values and @options.values.length
-					@options.min_value = 0
-					@options.max_value = @options.values.length-1
+				@_tl = new TimelineMax
+					paused: true
 
-			_setHandleClass: (add = false) ->
-				if event.target == @handle.get(0)
-					if add
-						@handle.addClass('touching')
-					else
-						@handle.removeClass('touching')
+			_configureOptions: ->
+				@_options = @_options_elm.find('.option')
+				@_options.css
+					position: 'absolute'
+
+				@_option_count = @_options.length
+				@_option_w = @_options_elm.width()
+
+				for option in @_options
+					@_addOptionPage(option)
+
+			_addOptionPage: (option) ->
+				id = $(option).data('id')
+				# offset = if @args.offset_class then $(option).find(@args.offset_class).position() else 0
+				offset = {
+					left: 0
+				}
+				# console.log('offset',id,offset)
+
+				@_tl.from option, .4,
+					x: @_option_w - offset.left
+					ease: Linear.easeNone
+				@_tl.fromTo option, .1,
+					{
+						opacity: 0
+					}
+					{
+						opacity: 1
+						ease: Power1.easeInOut
+					}
+				,"-=.25"
+				@_tl.add "option-#{id}"
+				@_tl.to option, .4,
+					x: -(@_option_w - offset.left)
+					ease: Linear.easeNone
+				@_tl.to option, .1,
+					opacity: 0
+					ease: Power1.easeInOut
+				,"-=.25"
+
 
 			value: (val) ->
 				if val?
-					@_value = val
-					@_value_pct = @_valueToPercent(val)
-					@
+					# console.log('setting,',val)
+					@_pageTo(val,true)
 				else
-					@_value
+					label = @_tl.currentLabel()
+					if label
+						label.replace('option-','')
 
-			valuePercent: (val) ->
-				if val?
-					@_value_pct = val
-					@_value = @_percentToValue(val)
-					@
+						firstelm = @_options.eq(0)
+						label.data('id')
+
+					label
+
+			_pageTo: (id,instant) ->
+				@_current_option = id
+				data_id = @_options.eq(@_current_option).data('id')
+				# console.log('paging to',id)
+				if instant
+					@_tl.seek("option-#{data_id}")
 				else
-					@_value_pct
+					@_tl.seek("option-#{data_id}")
 
-			_update: ->
-				if @options.vertical
-					pos = @_touchy.current_point.y
+			_onStart: (e, pointer) ->
+				console.log('Touch started')
+				# direction = @_pointerDirection()
+
+
+			_onMove: (e, pointer) ->
+				direction = @_direction()
+				distance = @_distance()
+
+				return true if direction and not direction.match /^(left|right)$/
+
+				duration = @_tl.totalDuration()
+				duration_ms = duration * 1000
+				duration_per_option = duration_ms / @_option_count
+				duration_per_pixel = duration_ms / (@_option_w * @_option_count)
+
+				console.log(duration_ms,@_option_w,@_option_count)
+
+				data_id = @_options.eq(@_current_option).data('id')
+				current_time = @_tl.getLabelTime("option-#{data_id}")
+
+				time_change = Math.abs(distance * (duration_per_pixel / 2)) / 1000
+
+				# console.log(time_change)
+
+				if direction == "right"
+					time_change = current_time if current_time - time_change < 0
+					time = "option-#{data_id}-=#{time_change}"
+				else if direction == "left"
+					time_change = current_time if current_time + time_change > duration
+					time = "option-#{data_id}+=#{time_change}"
+				console.log('seeking to',time)
+				@_tl.seek(time)
+
+			_onEnd: (e,pointer) ->
+				direction = @_direction()
+				distance = @_distance()
+
+				current_elm = @_options.eq(@_current_option)
+
+				if direction == "left"
+					next_ind = @_current_option + 1
+				else if direction == "right"
+					next_ind = @_current_option - 1
+
+				if next_ind > -1 and next_ind < @_option_count
+					@_panTo(next_ind)
 				else
-					pos = @_touchy.current_point.x
+					@_panTo(@_current_option)
 
-				pct = Math.round(((pos - @_offset) / @_length) * 100)
-				pct = 0 if pct < 0
-				pct = 100 if pct > 100
+			_direction: ->
+				if @_touchy.distance.x > 0
+					'right'
+				else if @_touchy.distance.x < 0
+					'left'
+				else
+					''
 
-				val = @_percentToValue(pct)
-				val = @_trimAlignValue(val)
+			_distance: ->
+				Math.abs(@_touchy.distance.x)
 
-				if val != @_value
-					# value has changed
-					@value(val)
-					@_updateHandlePosition()
-					@_updateBubble()
-					@emitEvent('update', [ @, event, @_value ] )
+			# _onPanEnd: (e,phase,direction,distance) ->
 
-			_updateHandlePosition: ->
-				if @handle
-					# move the handle
-					handle_pos = (@_value_pct / 100) * @_length
-					handle_pos -= @_handleLength / 2
-					if @options.vertical
-						@handle.css('top',handle_pos)
-					else
-						@handle.css('left',handle_pos)
+			# 	# console.log(e,phase,direction,distance)
 
-			_updateBubble: ->
-				if @options.show_bubble and @bubble_elm
+			# 	deltaX = distance
+			# 	current_elm = @_options.filter(".#{@_current_option}")
 
-					bubble_text = if @options.values and @options.values.length then @options.values[@_value] else @_value
+			# 	if phase == "end"
+			# 		if direction == "left"
+			# 			elm = current_elm.next()
+			# 		else if direction == "right"
+			# 			elm = current_elm.prev()
+			# 			elm = [] if elm.hasClass('template')
 
-					# set value
-					@bubble_elm.text('' + @options.bubble_prefix + bubble_text + @options.bubble_suffix)
-					# move the handle
-					bubble_pos = (@_value_pct / 100) * @_length
-					bubble_pos -= @bubble_elm.outerWidth() / 2
-					if @options.vertical
-						@bubble_elm.css('top',bubble_pos)
-					else
-						@bubble_elm.css('left',bubble_pos)
-					
+			# 		if elm[0]
+			# 			@_panTo(elm[0])
+			# 			return
+
+			# 	# snap back to current
+			# 	@_tl.tweenTo "option-#{@_current_option}",
+			# 		ease: Strong.easeOut
+
+			_panTo: (id) ->
+				data_id = @_options.eq(id).data('id')
+				@_tl.tweenTo "option-#{data_id}",
+					ease: Strong.easeOut
+				@_current_option = id
 
 			_valueToPercent: (val) ->
 				((val - @options.min_value) / (@options.max_value - @options.min_value)) * 100
@@ -173,11 +260,9 @@ Licenced under the Apache license (see LICENSE file)
 				if @options.vertical
 					@_length = @elm.height()
 					@_offset = @elm.offset().top
-					@_handleLength = @handle.height() if @handle
 				else
 					@_length = @elm.width()
 					@_offset = @elm.offset().left
-					@_handleLength = @handle.width() if @handle
 
 				@_updateHandlePosition()
 
