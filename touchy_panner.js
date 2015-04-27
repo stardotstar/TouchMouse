@@ -33,6 +33,7 @@ Licenced under the Apache license (see LICENSE file)
           this._setupTouchyInstance();
           this._configureOptions();
           this.value(this.options.initial_index);
+          this._setupResize();
           this.emitEvent('init', [this]);
           this.elm.css('opacity', 1);
         }
@@ -89,7 +90,7 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchyPanner.prototype._configureOptions = function() {
-          var oh, option, _i, _len, _ref;
+          var option, _i, _len, _ref, _results;
           this._tl = new TimelineMax({
             paused: true
           });
@@ -99,19 +100,13 @@ Licenced under the Apache license (see LICENSE file)
           });
           this._option_count = this._options.length;
           this._option_w = this._options_elm.width();
-          this._option_h = 0;
           _ref = this._options;
+          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             option = _ref[_i];
-            oh = $(option).outerHeight();
-            if (oh > this._option_h) {
-              this._option_h = oh;
-            }
-            this._addOptionPage(option);
+            _results.push(this._addOptionPage(option));
           }
-          return this._options_elm.css({
-            minHeight: this._option_h
-          });
+          return _results;
         };
 
         TouchyPanner.prototype._addOptionPage = function(option) {
@@ -305,7 +300,25 @@ Licenced under the Apache license (see LICENSE file)
             this._length = this.elm.width();
             this._offset = this.elm.offset().left;
           }
-          return this._updateHandlePosition();
+          return this._setOptionHeight();
+        };
+
+        TouchyPanner.prototype._setOptionHeight = function() {
+          var oh, option, _i, _len, _ref;
+          if (this.elm.is(':visible')) {
+            this._option_h = 0;
+            _ref = this._options;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              option = _ref[_i];
+              oh = $(option).outerHeight();
+              if (oh > this._option_h) {
+                this._option_h = oh;
+              }
+            }
+            return this._options_elm.css({
+              minHeight: this._option_h
+            });
+          }
         };
 
         extend(TouchyPanner.prototype, EventEmitter.prototype);

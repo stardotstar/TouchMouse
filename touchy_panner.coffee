@@ -33,6 +33,7 @@ Licenced under the Apache license (see LICENSE file)
 				@_setupTouchyInstance()
 				@_configureOptions()
 				@value(@options.initial_index)
+				@_setupResize()
 
 				@emitEvent('init', [ @ ] )
 
@@ -90,17 +91,9 @@ Licenced under the Apache license (see LICENSE file)
 
 				@_option_count = @_options.length
 				@_option_w = @_options_elm.width()
-
-				@_option_h = 0
+				
 				for option in @_options
-					oh = $(option).outerHeight()
-					if oh > @_option_h
-						@_option_h = oh
 					@_addOptionPage(option)
-
-				@_options_elm.css
-					minHeight: @_option_h
-
 
 
 			_addOptionPage: (option) ->
@@ -283,7 +276,17 @@ Licenced under the Apache license (see LICENSE file)
 					@_length = @elm.width()
 					@_offset = @elm.offset().left
 
-				@_updateHandlePosition()
+				@_setOptionHeight()
+
+			_setOptionHeight: ->
+				if @elm.is(':visible')
+					@_option_h = 0
+					for option in @_options
+						oh = $(option).outerHeight()
+						if oh > @_option_h
+							@_option_h = oh
+					@_options_elm.css
+						minHeight: @_option_h
 
 			extend TouchyPanner.prototype, EventEmitter.prototype
 
