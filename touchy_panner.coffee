@@ -87,8 +87,17 @@ Licenced under the Apache license (see LICENSE file)
 				@_option_count = @_options.length
 				@_option_w = @_options_elm.width()
 
+				@_option_h = 0
 				for option in @_options
+					oh = $(option).outerHeight()
+					if oh > @_option_h
+						@_option_h = oh
 					@_addOptionPage(option)
+
+				@_options_elm.css
+					minHeight: @_option_h
+
+
 
 			_addOptionPage: (option) ->
 				id = $(option).data('id')
@@ -134,6 +143,7 @@ Licenced under the Apache license (see LICENSE file)
 					@_tl.seek("option-#{data_id}")
 				else
 					@_tl.seek("option-#{data_id}")
+				@_updateNavState()
 
 			_onStart: (e, pointer) ->
 				# console.log('Touch started')
@@ -220,6 +230,17 @@ Licenced under the Apache license (see LICENSE file)
 					onComplete: =>
 						@emitEvent('panchanged', [ @ ] )
 				@_current_option = id
+				@_updateNavState()
+
+			_updateNavState: ->
+				if @_current_option == 0
+					@elm.addClass('first')
+					@elm.removeClass('last')
+				else if @_current_option == @_option_count - 1
+					@elm.addClass('last')
+					@elm.removeClass('first')
+				else
+					@elm.removeClass('first last')
 
 			_valueToPercent: (val) ->
 				((val - @options.min_value) / (@options.max_value - @options.min_value)) * 100

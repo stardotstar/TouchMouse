@@ -86,7 +86,7 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchyPanner.prototype._configureOptions = function() {
-          var option, _i, _len, _ref, _results;
+          var oh, option, _i, _len, _ref;
           this._tl = new TimelineMax({
             paused: true
           });
@@ -96,13 +96,19 @@ Licenced under the Apache license (see LICENSE file)
           });
           this._option_count = this._options.length;
           this._option_w = this._options_elm.width();
+          this._option_h = 0;
           _ref = this._options;
-          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             option = _ref[_i];
-            _results.push(this._addOptionPage(option));
+            oh = $(option).outerHeight();
+            if (oh > this._option_h) {
+              this._option_h = oh;
+            }
+            this._addOptionPage(option);
           }
-          return _results;
+          return this._options_elm.css({
+            minHeight: this._option_h
+          });
         };
 
         TouchyPanner.prototype._addOptionPage = function(option) {
@@ -145,10 +151,11 @@ Licenced under the Apache license (see LICENSE file)
           this._current_option = id;
           data_id = this._options.eq(this._current_option).data('id');
           if (instant) {
-            return this._tl.seek("option-" + data_id);
+            this._tl.seek("option-" + data_id);
           } else {
-            return this._tl.seek("option-" + data_id);
+            this._tl.seek("option-" + data_id);
           }
+          return this._updateNavState();
         };
 
         TouchyPanner.prototype._onStart = function(e, pointer) {};
@@ -237,7 +244,20 @@ Licenced under the Apache license (see LICENSE file)
               };
             })(this)
           });
-          return this._current_option = id;
+          this._current_option = id;
+          return this._updateNavState();
+        };
+
+        TouchyPanner.prototype._updateNavState = function() {
+          if (this._current_option === 0) {
+            this.elm.addClass('first');
+            return this.elm.removeClass('last');
+          } else if (this._current_option === this._option_count - 1) {
+            this.elm.addClass('last');
+            return this.elm.removeClass('first');
+          } else {
+            return this.elm.removeClass('first last');
+          }
         };
 
         TouchyPanner.prototype._valueToPercent = function(val) {
