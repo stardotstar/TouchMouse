@@ -27,7 +27,7 @@ Licenced under the Apache license (see LICENSE file)
 
 				@options = $.extend {}, _default_options, options
 
-				console.log('Initialized TouchyPanner on', @elm ,@options)
+				# console.log('Initialized TouchyPanner on', @elm ,@options)
 
 				@_configurePanner()
 				@_setupTouchyInstance()
@@ -43,8 +43,13 @@ Licenced under the Apache license (see LICENSE file)
 				initial_index: 0
 				container_elm: '.options'
 				option_elm: '.option'
+				threshold: 20
 				velocityXThreshold: 1
 				deltaXThresholdPercent: .3
+
+			refreshOptions: ->
+				@_tl?.kill()
+				@_configureOptions()
 
 			_setupTouchyInstance: ->
 				@_touchy = new Touchy @elm,
@@ -71,10 +76,10 @@ Licenced under the Apache license (see LICENSE file)
 				@_options_elm.css
 					position: 'relative'
 
+			_configureOptions: ->
 				@_tl = new TimelineMax
 					paused: true
 
-			_configureOptions: ->
 				@_options = @_options_elm.find('.option')
 				@_options.css
 					position: 'absolute'
@@ -114,20 +119,12 @@ Licenced under the Apache license (see LICENSE file)
 					ease: Power1.easeInOut
 				,"-=.25"
 
-
 			value: (val) ->
 				if val?
 					# console.log('setting,',val)
 					@_pageTo(val,true)
 				else
-					label = @_tl.currentLabel()
-					if label
-						label.replace('option-','')
-
-						firstelm = @_options.eq(0)
-						label.data('id')
-
-					label
+					@_current_option
 
 			_pageTo: (id,instant) ->
 				@_current_option = id
@@ -139,9 +136,7 @@ Licenced under the Apache license (see LICENSE file)
 					@_tl.seek("option-#{data_id}")
 
 			_onStart: (e, pointer) ->
-				console.log('Touch started')
-				# direction = @_pointerDirection()
-
+				# console.log('Touch started')
 
 			_onMove: (e, pointer) ->
 				direction = @_direction()
@@ -149,34 +144,48 @@ Licenced under the Apache license (see LICENSE file)
 
 				return true if direction and not direction.match /^(left|right)$/
 
-				duration = @_tl.totalDuration()
-				duration_ms = duration * 1000
-				duration_per_option = duration_ms / @_option_count
-				duration_per_pixel = duration_ms / (@_option_w * @_option_count)
+				# console.log(distance)
 
-				console.log(duration_ms,@_option_w,@_option_count)
+				if distance >= @options.threshold and not @_started
+					# console.log('Pan Started')
+					@_started = true
+					@emitEvent('panstart', [ @ ] )
+				else if @_started
 
-				data_id = @_options.eq(@_current_option).data('id')
-				current_time = @_tl.getLabelTime("option-#{data_id}")
+					duration = @_tl.totalDuration()
+					duration_ms = duration * 1000
+					duration_per_option = duration_ms / @_option_count
+					duration_per_pixel = duration_ms / (@_option_w * @_option_count)
 
-				time_change = Math.abs(distance * (duration_per_pixel / 2)) / 1000
+					# console.log(duration_ms,@_option_w,@_option_count)
 
-				# console.log(time_change)
+					data_id = @_options.eq(@_current_option).data('id')
+					current_time = @_tl.getLabelTime("option-#{data_id}")
 
-				if direction == "right"
-					time_change = current_time if current_time - time_change < 0
-					time = "option-#{data_id}-=#{time_change}"
-				else if direction == "left"
-					time_change = current_time if current_time + time_change > duration
-					time = "option-#{data_id}+=#{time_change}"
-				console.log('seeking to',time)
-				@_tl.seek(time)
+					time_change = Math.abs(distance * (duration_per_pixel / 2)) / 1000
+
+					# console.log(time_change)
+
+					if direction == "right"
+						time_change = current_time if current_time - time_change < 0
+						time = "option-#{data_id}-=#{time_change}"
+					else if direction == "left"
+						time_change = current_time if current_time + time_change > duration
+						time = "option-#{data_id}+=#{time_change}"
+					# console.log('seeking to',time)
+					@_tl.seek(time)
+
+					@emitEvent('panmove', [ e, @ ] )
+
 
 			_onEnd: (e,pointer) ->
+				return unless @_started
+
 				direction = @_direction()
 				distance = @_distance()
 
 				current_elm = @_options.eq(@_current_option)
+				current_elm.removeClass('current')
 
 				if direction == "left"
 					next_ind = @_current_option + 1
@@ -187,6 +196,9 @@ Licenced under the Apache license (see LICENSE file)
 					@_panTo(next_ind)
 				else
 					@_panTo(@_current_option)
+
+				@_started = false
+				@emitEvent('panend', [ e, @ ] )
 
 			_direction: ->
 				if @_touchy.distance.x > 0
@@ -199,32 +211,14 @@ Licenced under the Apache license (see LICENSE file)
 			_distance: ->
 				Math.abs(@_touchy.distance.x)
 
-			# _onPanEnd: (e,phase,direction,distance) ->
-
-			# 	# console.log(e,phase,direction,distance)
-
-			# 	deltaX = distance
-			# 	current_elm = @_options.filter(".#{@_current_option}")
-
-			# 	if phase == "end"
-			# 		if direction == "left"
-			# 			elm = current_elm.next()
-			# 		else if direction == "right"
-			# 			elm = current_elm.prev()
-			# 			elm = [] if elm.hasClass('template')
-
-			# 		if elm[0]
-			# 			@_panTo(elm[0])
-			# 			return
-
-			# 	# snap back to current
-			# 	@_tl.tweenTo "option-#{@_current_option}",
-			# 		ease: Strong.easeOut
-
 			_panTo: (id) ->
-				data_id = @_options.eq(id).data('id')
+				elm = @_options.eq(id)
+				elm.addClass('current')
+				data_id = elm.data('id')
 				@_tl.tweenTo "option-#{data_id}",
-					ease: Strong.easeOut
+					ease: Strong.easeOut,
+					onComplete: =>
+						@emitEvent('panchanged', [ @ ] )
 				@_current_option = id
 
 			_valueToPercent: (val) ->

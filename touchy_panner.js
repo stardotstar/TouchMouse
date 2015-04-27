@@ -29,7 +29,6 @@ Licenced under the Apache license (see LICENSE file)
         function TouchyPanner(elm, options) {
           this.elm = $(elm).first();
           this.options = $.extend({}, _default_options, options);
-          console.log('Initialized TouchyPanner on', this.elm, this.options);
           this._configurePanner();
           this._setupTouchyInstance();
           this._configureOptions();
@@ -43,8 +42,17 @@ Licenced under the Apache license (see LICENSE file)
           initial_index: 0,
           container_elm: '.options',
           option_elm: '.option',
+          threshold: 20,
           velocityXThreshold: 1,
           deltaXThresholdPercent: .3
+        };
+
+        TouchyPanner.prototype.refreshOptions = function() {
+          var _ref;
+          if ((_ref = this._tl) != null) {
+            _ref.kill();
+          }
+          return this._configureOptions();
         };
 
         TouchyPanner.prototype._setupTouchyInstance = function() {
@@ -72,16 +80,16 @@ Licenced under the Apache license (see LICENSE file)
           this.elm.addClass('panner');
           this.elm.addClass(this.options.vertical ? 'panner_v' : 'panner_h');
           this._options_elm = this.elm.find(this.options.container_elm);
-          this._options_elm.css({
+          return this._options_elm.css({
             position: 'relative'
-          });
-          return this._tl = new TimelineMax({
-            paused: true
           });
         };
 
         TouchyPanner.prototype._configureOptions = function() {
           var option, _i, _len, _ref, _results;
+          this._tl = new TimelineMax({
+            paused: true
+          });
           this._options = this._options_elm.find('.option');
           this._options.css({
             position: 'absolute'
@@ -125,17 +133,10 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchyPanner.prototype.value = function(val) {
-          var firstelm, label;
           if (val != null) {
             return this._pageTo(val, true);
           } else {
-            label = this._tl.currentLabel();
-            if (label) {
-              label.replace('option-', '');
-              firstelm = this._options.eq(0);
-              label.data('id');
-            }
-            return label;
+            return this._current_option;
           }
         };
 
@@ -150,9 +151,7 @@ Licenced under the Apache license (see LICENSE file)
           }
         };
 
-        TouchyPanner.prototype._onStart = function(e, pointer) {
-          return console.log('Touch started');
-        };
+        TouchyPanner.prototype._onStart = function(e, pointer) {};
 
         TouchyPanner.prototype._onMove = function(e, pointer) {
           var current_time, data_id, direction, distance, duration, duration_ms, duration_per_option, duration_per_pixel, time, time_change;
@@ -161,44 +160,54 @@ Licenced under the Apache license (see LICENSE file)
           if (direction && !direction.match(/^(left|right)$/)) {
             return true;
           }
-          duration = this._tl.totalDuration();
-          duration_ms = duration * 1000;
-          duration_per_option = duration_ms / this._option_count;
-          duration_per_pixel = duration_ms / (this._option_w * this._option_count);
-          console.log(duration_ms, this._option_w, this._option_count);
-          data_id = this._options.eq(this._current_option).data('id');
-          current_time = this._tl.getLabelTime("option-" + data_id);
-          time_change = Math.abs(distance * (duration_per_pixel / 2)) / 1000;
-          if (direction === "right") {
-            if (current_time - time_change < 0) {
-              time_change = current_time;
+          if (distance >= this.options.threshold && !this._started) {
+            this._started = true;
+            return this.emitEvent('panstart', [this]);
+          } else if (this._started) {
+            duration = this._tl.totalDuration();
+            duration_ms = duration * 1000;
+            duration_per_option = duration_ms / this._option_count;
+            duration_per_pixel = duration_ms / (this._option_w * this._option_count);
+            data_id = this._options.eq(this._current_option).data('id');
+            current_time = this._tl.getLabelTime("option-" + data_id);
+            time_change = Math.abs(distance * (duration_per_pixel / 2)) / 1000;
+            if (direction === "right") {
+              if (current_time - time_change < 0) {
+                time_change = current_time;
+              }
+              time = "option-" + data_id + "-=" + time_change;
+            } else if (direction === "left") {
+              if (current_time + time_change > duration) {
+                time_change = current_time;
+              }
+              time = "option-" + data_id + "+=" + time_change;
             }
-            time = "option-" + data_id + "-=" + time_change;
-          } else if (direction === "left") {
-            if (current_time + time_change > duration) {
-              time_change = current_time;
-            }
-            time = "option-" + data_id + "+=" + time_change;
+            this._tl.seek(time);
+            return this.emitEvent('panmove', [e, this]);
           }
-          console.log('seeking to', time);
-          return this._tl.seek(time);
         };
 
         TouchyPanner.prototype._onEnd = function(e, pointer) {
           var current_elm, direction, distance, next_ind;
+          if (!this._started) {
+            return;
+          }
           direction = this._direction();
           distance = this._distance();
           current_elm = this._options.eq(this._current_option);
+          current_elm.removeClass('current');
           if (direction === "left") {
             next_ind = this._current_option + 1;
           } else if (direction === "right") {
             next_ind = this._current_option - 1;
           }
           if (next_ind > -1 && next_ind < this._option_count) {
-            return this._panTo(next_ind);
+            this._panTo(next_ind);
           } else {
-            return this._panTo(this._current_option);
+            this._panTo(this._current_option);
           }
+          this._started = false;
+          return this.emitEvent('panend', [e, this]);
         };
 
         TouchyPanner.prototype._direction = function() {
@@ -216,10 +225,17 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchyPanner.prototype._panTo = function(id) {
-          var data_id;
-          data_id = this._options.eq(id).data('id');
+          var data_id, elm;
+          elm = this._options.eq(id);
+          elm.addClass('current');
+          data_id = elm.data('id');
           this._tl.tweenTo("option-" + data_id, {
-            ease: Strong.easeOut
+            ease: Strong.easeOut,
+            onComplete: (function(_this) {
+              return function() {
+                return _this.emitEvent('panchanged', [_this]);
+              };
+            })(this)
           });
           return this._current_option = id;
         };

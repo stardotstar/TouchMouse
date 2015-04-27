@@ -51,7 +51,7 @@ Events have the following custom data:
 				@holding = false
 				@dragging = false
 				@options = $.extend {}, _default_options, options
-				console.log('Initialized Touchy on', @elm ,@options)
+				# console.log('Initialized Touchy on', @elm ,@options)
 
 				@_setPosition()
 				@start_position = $.extend {}, @position

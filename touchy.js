@@ -60,7 +60,6 @@ Events have the following custom data:
           this.holding = false;
           this.dragging = false;
           this.options = $.extend({}, _default_options, options);
-          console.log('Initialized Touchy on', this.elm, this.options);
           this._setPosition();
           this.start_position = $.extend({}, this.position);
           this.start_point = {
