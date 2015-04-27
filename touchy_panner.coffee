@@ -52,8 +52,8 @@ Licenced under the Apache license (see LICENSE file)
 				@_configureOptions()
 
 			_setupTouchyInstance: ->
-				@_touchy = new Touchy @elm,
-					cancel_on_scroll: false
+				@_touchy = new Touchy @elm
+					# cancel_on_scroll: false
 
 				@_touchy.on 'start', (event,t,pointer) =>
 					@_onStart(event,pointer)
@@ -64,6 +64,10 @@ Licenced under the Apache license (see LICENSE file)
 					# @emitEvent('panmove', [ event, @, @_value ] )
 
 				@_touchy.on 'end', (event,t,pointer) =>
+					@_onEnd(event,pointer)
+					# @emitEvent('panend', [ event, @, @_value ] )
+
+				@_touchy.on 'cancel', (event,t,pointer) =>
 					@_onEnd(event,pointer)
 					# @emitEvent('panend', [ event, @, @_value ] )
 

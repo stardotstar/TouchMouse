@@ -56,9 +56,7 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchyPanner.prototype._setupTouchyInstance = function() {
-          this._touchy = new Touchy(this.elm, {
-            cancel_on_scroll: false
-          });
+          this._touchy = new Touchy(this.elm);
           this._touchy.on('start', (function(_this) {
             return function(event, t, pointer) {
               return _this._onStart(event, pointer);
@@ -69,7 +67,12 @@ Licenced under the Apache license (see LICENSE file)
               return _this._onMove(event, pointer);
             };
           })(this));
-          return this._touchy.on('end', (function(_this) {
+          this._touchy.on('end', (function(_this) {
+            return function(event, t, pointer) {
+              return _this._onEnd(event, pointer);
+            };
+          })(this));
+          return this._touchy.on('cancel', (function(_this) {
             return function(event, t, pointer) {
               return _this._onEnd(event, pointer);
             };
