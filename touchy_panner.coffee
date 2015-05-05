@@ -32,6 +32,7 @@ Licenced under the Apache license (see LICENSE file)
 				@_configurePanner()
 				@_setupTouchyInstance()
 				@_configureOptions()
+				@_configureNav()
 				@value(@options.initial_index)
 				@_setupResize()
 
@@ -44,6 +45,7 @@ Licenced under the Apache license (see LICENSE file)
 				initial_index: 0
 				container_elm: '.options'
 				option_elm: '.option'
+				nav_elm: '.nav'
 				threshold: 20
 				velocityXThreshold: 1
 				deltaXThresholdPercent: .3
@@ -51,6 +53,7 @@ Licenced under the Apache license (see LICENSE file)
 			refreshOptions: ->
 				@_tl?.kill()
 				@_configureOptions()
+				@value(@options.initial_index)
 
 			_setupTouchyInstance: ->
 				@_touchy = new Touchy @elm
@@ -95,7 +98,6 @@ Licenced under the Apache license (see LICENSE file)
 				for option in @_options
 					@_addOptionPage(option)
 
-
 			_addOptionPage: (option) ->
 				id = $(option).data('id')
 				# offset = if @args.offset_class then $(option).find(@args.offset_class).position() else 0
@@ -124,6 +126,19 @@ Licenced under the Apache license (see LICENSE file)
 					opacity: 0
 					ease: Power1.easeInOut
 				,"-=.25"
+
+			_configureNav: ->
+				@_nav_elm = @elm.find(@options.nav_elm)
+				@_nav_elm.find('a').on 'click', (e) ->
+					e.preventDefault()
+
+				prev_touchy = new Touchy @_nav_elm.find('.prev')
+				prev_touchy.on 'end', (event,t,pointer) =>
+					@_panTo @_current_option - 1
+
+				next_touchy = new Touchy @_nav_elm.find('.next')
+				next_touchy.on 'end', (event,t,pointer) =>
+					@_panTo @_current_option + 1
 
 			value: (val) ->
 				if val?
@@ -199,10 +214,7 @@ Licenced under the Apache license (see LICENSE file)
 				else if direction == "right"
 					next_ind = @_current_option - 1
 
-				if next_ind > -1 and next_ind < @_option_count
-					@_panTo(next_ind)
-				else
-					@_panTo(@_current_option)
+				@_panTo(next_ind)
 
 				@_started = false
 				@emitEvent('panend', [ e, @ ] )
@@ -219,6 +231,10 @@ Licenced under the Apache license (see LICENSE file)
 				Math.abs(@_touchy.distance.x)
 
 			_panTo: (id) ->
+				# dont allow paging past min and max
+				if not (id > -1 and id < @_option_count)
+					id = @_current_option
+
 				elm = @_options.eq(id)
 				elm.addClass('current')
 				data_id = elm.data('id')

@@ -32,6 +32,7 @@ Licenced under the Apache license (see LICENSE file)
           this._configurePanner();
           this._setupTouchyInstance();
           this._configureOptions();
+          this._configureNav();
           this.value(this.options.initial_index);
           this._setupResize();
           this.emitEvent('init', [this]);
@@ -43,6 +44,7 @@ Licenced under the Apache license (see LICENSE file)
           initial_index: 0,
           container_elm: '.options',
           option_elm: '.option',
+          nav_elm: '.nav',
           threshold: 20,
           velocityXThreshold: 1,
           deltaXThresholdPercent: .3
@@ -53,7 +55,8 @@ Licenced under the Apache license (see LICENSE file)
           if ((_ref = this._tl) != null) {
             _ref.kill();
           }
-          return this._configureOptions();
+          this._configureOptions();
+          return this.value(this.options.initial_index);
         };
 
         TouchyPanner.prototype._setupTouchyInstance = function() {
@@ -136,6 +139,26 @@ Licenced under the Apache license (see LICENSE file)
           }, "-=.25");
         };
 
+        TouchyPanner.prototype._configureNav = function() {
+          var next_touchy, prev_touchy;
+          this._nav_elm = this.elm.find(this.options.nav_elm);
+          this._nav_elm.find('a').on('click', function(e) {
+            return e.preventDefault();
+          });
+          prev_touchy = new Touchy(this._nav_elm.find('.prev'));
+          prev_touchy.on('end', (function(_this) {
+            return function(event, t, pointer) {
+              return _this._panTo(_this._current_option - 1);
+            };
+          })(this));
+          next_touchy = new Touchy(this._nav_elm.find('.next'));
+          return next_touchy.on('end', (function(_this) {
+            return function(event, t, pointer) {
+              return _this._panTo(_this._current_option + 1);
+            };
+          })(this));
+        };
+
         TouchyPanner.prototype.value = function(val) {
           if (val != null) {
             return this._pageTo(val, true);
@@ -206,11 +229,7 @@ Licenced under the Apache license (see LICENSE file)
           } else if (direction === "right") {
             next_ind = this._current_option - 1;
           }
-          if (next_ind > -1 && next_ind < this._option_count) {
-            this._panTo(next_ind);
-          } else {
-            this._panTo(this._current_option);
-          }
+          this._panTo(next_ind);
           this._started = false;
           return this.emitEvent('panend', [e, this]);
         };
@@ -231,6 +250,9 @@ Licenced under the Apache license (see LICENSE file)
 
         TouchyPanner.prototype._panTo = function(id) {
           var data_id, elm;
+          if (!(id > -1 && id < this._option_count)) {
+            id = this._current_option;
+          }
           elm = this._options.eq(id);
           elm.addClass('current');
           data_id = elm.data('id');
