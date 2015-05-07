@@ -388,8 +388,13 @@ Events have the following custom data:
           custom_event = $.Event('touchy:' + eventName);
           this.elm.trigger(custom_event, [instance, pointer]);
           if (custom_event.isDefaultPrevented()) {
+            console.log('preventing default', originalEvent);
             originalEvent.preventDefault();
-            return originalEvent.stopPropagation();
+            if (eventName === 'end') {
+              return this.elm.one('click', function(e) {
+                return e.preventDefault();
+              });
+            }
           }
         };
 

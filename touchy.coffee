@@ -337,8 +337,15 @@ Events have the following custom data:
 				@elm.trigger(custom_event, [ instance, pointer ])
 				if custom_event.isDefaultPrevented()
 					# preventing default
+					console.log('preventing default',originalEvent)
 					originalEvent.preventDefault()
-					originalEvent.stopPropagation()
+					# originalEvent.stopPropagation()
+
+					if eventName == 'end'
+						# cancel click too
+						@elm.one 'click', (e) ->
+							e.preventDefault()
+							# e.stopPropagation()
 
 			_resetTouchy: ->
 				@touching = false
