@@ -208,11 +208,13 @@ Licenced under the Apache license (see LICENSE file)
             handle_pos = (this._value_pct / 100) * this._length;
             handle_pos -= this._handleLength / 2;
             if (this.options.vertical) {
-              return this.handle.css('top', handle_pos);
+              this.handle.css('top', handle_pos);
             } else {
-              return this.handle.css('left', handle_pos);
+              this.handle.css('left', handle_pos);
             }
+            return true;
           }
+          return false;
         };
 
         TouchySlider.prototype._updateBubble = function() {
@@ -278,7 +280,8 @@ Licenced under the Apache license (see LICENSE file)
               this._handleLength = this.handle.width();
             }
           }
-          return this._updateHandlePosition();
+          this._updateHandlePosition();
+          return true;
         };
 
         extend(TouchySlider.prototype, EventEmitter.prototype);

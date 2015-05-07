@@ -179,6 +179,8 @@ Licenced under the Apache license (see LICENSE file)
 						@handle.css('top',handle_pos)
 					else
 						@handle.css('left',handle_pos)
+					return true
+				false
 
 			_updateBubble: ->
 				if @options.show_bubble and @bubble_elm
@@ -236,6 +238,8 @@ Licenced under the Apache license (see LICENSE file)
 					@_handleLength = @handle.width() if @handle
 
 				@_updateHandlePosition()
+
+				true
 
 			extend TouchySlider.prototype, EventEmitter.prototype
 
