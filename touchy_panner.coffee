@@ -129,15 +129,15 @@ Licenced under the Apache license (see LICENSE file)
 
 			_configureNav: ->
 				@_nav_elm = @elm.find(@options.nav_elm)
-				@_nav_elm.find('a').on 'click', (e) ->
-					e.preventDefault()
 
 				prev_touchy = new Touchy @_nav_elm.find('.prev')
 				prev_touchy.on 'end', (event,t,pointer) =>
+					event.preventDefault()
 					@_panTo @_current_option - 1
 
 				next_touchy = new Touchy @_nav_elm.find('.next')
 				next_touchy.on 'end', (event,t,pointer) =>
+					event.preventDefault()
 					@_panTo @_current_option + 1
 
 			value: (val) ->

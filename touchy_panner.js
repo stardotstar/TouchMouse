@@ -142,18 +142,17 @@ Licenced under the Apache license (see LICENSE file)
         TouchyPanner.prototype._configureNav = function() {
           var next_touchy, prev_touchy;
           this._nav_elm = this.elm.find(this.options.nav_elm);
-          this._nav_elm.find('a').on('click', function(e) {
-            return e.preventDefault();
-          });
           prev_touchy = new Touchy(this._nav_elm.find('.prev'));
           prev_touchy.on('end', (function(_this) {
             return function(event, t, pointer) {
+              event.preventDefault();
               return _this._panTo(_this._current_option - 1);
             };
           })(this));
           next_touchy = new Touchy(this._nav_elm.find('.next'));
           return next_touchy.on('end', (function(_this) {
             return function(event, t, pointer) {
+              event.preventDefault();
               return _this._panTo(_this._current_option + 1);
             };
           })(this));
