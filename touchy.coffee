@@ -331,21 +331,23 @@ Events have the following custom data:
 				@_triggerElementEvent('cancel', event, @)
 
 			_triggerElementEvent: (eventName, originalEvent, instance, pointer) ->
+				# console.log('triggering end') if eventName == 'end'
 				@emitEvent(eventName, [ originalEvent, instance, pointer ] )
 				# now trigger an event on the element
 				custom_event = $.Event('touchy:'+ eventName)
 				@elm.trigger(custom_event, [ instance, pointer ])
-				if custom_event.isDefaultPrevented()
+				if custom_event.isDefaultPrevented() or originalEvent.defaultPrevented
 					# preventing default
-					console.log('preventing default',originalEvent)
+					# console.log('preventing default',originalEvent)
 					originalEvent.preventDefault()
-					# originalEvent.stopPropagation()
+					originalEvent.stopPropagation()
 
 					if eventName == 'end'
 						# cancel click too
+						# console.log('cancelling click')
 						@elm.one 'click', (e) ->
 							e.preventDefault()
-							# e.stopPropagation()
+							e.stopPropagation()
 
 			_resetTouchy: ->
 				@touching = false

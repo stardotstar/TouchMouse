@@ -140,22 +140,7 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchyPanner.prototype._configureNav = function() {
-          var next_touchy, prev_touchy;
-          this._nav_elm = this.elm.find(this.options.nav_elm);
-          prev_touchy = new Touchy(this._nav_elm.find('.prev'));
-          prev_touchy.on('end', (function(_this) {
-            return function(event, t, pointer) {
-              event.preventDefault();
-              return _this._panTo(_this._current_option - 1);
-            };
-          })(this));
-          next_touchy = new Touchy(this._nav_elm.find('.next'));
-          return next_touchy.on('end', (function(_this) {
-            return function(event, t, pointer) {
-              event.preventDefault();
-              return _this._panTo(_this._current_option + 1);
-            };
-          })(this));
+          return this._nav_elm = this.elm.find(this.options.nav_elm);
         };
 
         TouchyPanner.prototype.value = function(val) {
@@ -216,6 +201,10 @@ Licenced under the Apache license (see LICENSE file)
 
         TouchyPanner.prototype._onEnd = function(e, pointer) {
           var current_elm, direction, distance, next_ind;
+          if ($(e.target).parent().is(this._nav_elm)) {
+            this._onNavEnd(e, pointer);
+            return;
+          }
           if (!this._started) {
             return;
           }
@@ -231,6 +220,17 @@ Licenced under the Apache license (see LICENSE file)
           this._panTo(next_ind);
           this._started = false;
           return this.emitEvent('panend', [e, this]);
+        };
+
+        TouchyPanner.prototype._onNavEnd = function(e, pointer) {
+          var elm;
+          e.preventDefault();
+          elm = $(e.target);
+          if (elm.hasClass('prev')) {
+            return this._panTo(this._current_option - 1);
+          } else if (elm.hasClass('next')) {
+            return this._panTo(this._current_option + 1);
+          }
         };
 
         TouchyPanner.prototype._direction = function() {

@@ -29,7 +29,7 @@ Licenced under the Apache license (see LICENSE file)
 
 				@handle = $(@options.handle).first() if @options.handle
 
-				console.log('Initialized TouchySlider on', @elm ,@options)
+				# console.log('Initialized TouchySlider on', @elm ,@options)
 
 				@_createSlider()
 				@_setupResize()

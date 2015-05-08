@@ -32,7 +32,6 @@ Licenced under the Apache license (see LICENSE file)
           if (this.options.handle) {
             this.handle = $(this.options.handle).first();
           }
-          console.log('Initialized TouchySlider on', this.elm, this.options);
           this._createSlider();
           this._setupResize();
           this._setupTouchyInstance();

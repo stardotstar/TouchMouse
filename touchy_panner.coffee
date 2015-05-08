@@ -130,16 +130,6 @@ Licenced under the Apache license (see LICENSE file)
 			_configureNav: ->
 				@_nav_elm = @elm.find(@options.nav_elm)
 
-				prev_touchy = new Touchy @_nav_elm.find('.prev')
-				prev_touchy.on 'end', (event,t,pointer) =>
-					event.preventDefault()
-					@_panTo @_current_option - 1
-
-				next_touchy = new Touchy @_nav_elm.find('.next')
-				next_touchy.on 'end', (event,t,pointer) =>
-					event.preventDefault()
-					@_panTo @_current_option + 1
-
 			value: (val) ->
 				if val?
 					# console.log('setting,',val)
@@ -201,6 +191,11 @@ Licenced under the Apache license (see LICENSE file)
 
 
 			_onEnd: (e,pointer) ->
+
+				if $(e.target).parent().is(@_nav_elm)
+					@_onNavEnd(e,pointer)
+					return
+
 				return unless @_started
 
 				direction = @_direction()
@@ -218,6 +213,16 @@ Licenced under the Apache license (see LICENSE file)
 
 				@_started = false
 				@emitEvent('panend', [ e, @ ] )
+
+			_onNavEnd: (e,pointer) ->
+				e.preventDefault()
+				elm = $(e.target)
+				if elm.hasClass('prev')
+					# console.log('go prev')
+					@_panTo @_current_option - 1
+				else if elm.hasClass('next')
+					# console.log('go next')
+					@_panTo @_current_option + 1
 
 			_direction: ->
 				if @_touchy.distance.x > 0
@@ -238,9 +243,13 @@ Licenced under the Apache license (see LICENSE file)
 				elm = @_options.eq(id)
 				elm.addClass('current')
 				data_id = elm.data('id')
+
+				# console.log('panning to',data_id)
+
 				@_tl.tweenTo "option-#{data_id}",
 					ease: Strong.easeOut,
 					onComplete: =>
+						# console.log('panchanged')
 						@emitEvent('panchanged', [ @ ] )
 				@_current_option = id
 				@_updateNavState()
