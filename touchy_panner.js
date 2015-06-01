@@ -33,6 +33,7 @@ Licenced under the Apache license (see LICENSE file)
           this._setupTouchyInstance();
           this._configureOptions();
           this._configureNav();
+          this._configureIndicator();
           this.value(this.options.initial_index);
           this._setupResize();
           this.emitEvent('init', [this]);
@@ -45,6 +46,8 @@ Licenced under the Apache license (see LICENSE file)
           container_elm: '.options',
           option_elm: '.option',
           nav_elm: '.nav',
+          indicator: false,
+          indicator_elm: '.indicator',
           threshold: 20,
           velocityXThreshold: 1,
           deltaXThresholdPercent: .3
@@ -93,7 +96,7 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchyPanner.prototype._configureOptions = function() {
-          var option, _i, _len, _ref, _results;
+          var option, _i, _len, _ref;
           this._tl = new TimelineMax({
             paused: true
           });
@@ -104,12 +107,11 @@ Licenced under the Apache license (see LICENSE file)
           this._option_count = this._options.length;
           this._option_w = this._options_elm.width();
           _ref = this._options;
-          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             option = _ref[_i];
-            _results.push(this._addOptionPage(option));
+            this._addOptionPage(option);
           }
-          return _results;
+          return true;
         };
 
         TouchyPanner.prototype._addOptionPage = function(option) {
@@ -140,12 +142,25 @@ Licenced under the Apache license (see LICENSE file)
         };
 
         TouchyPanner.prototype._configureNav = function() {
-          return this._nav_elm = this.elm.find(this.options.nav_elm);
+          this._nav_elm = this.elm.find(this.options.nav_elm);
+          return true;
+        };
+
+        TouchyPanner.prototype._configureIndicator = function() {
+          var i, _i, _ref;
+          if (!this.options.indicator) {
+            return;
+          }
+          this._indicator_elm = this.elm.find(this.options.indicator_elm);
+          for (i = _i = 1, _ref = this._option_count; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
+            this._indicator_elm.append("<span class='icon'>");
+          }
+          return true;
         };
 
         TouchyPanner.prototype.value = function(val) {
           if (val != null) {
-            return this._pageTo(val, true);
+            return this._pageTo(val);
           } else {
             return this._current_option;
           }
@@ -160,7 +175,8 @@ Licenced under the Apache license (see LICENSE file)
           } else {
             this._tl.seek("option-" + data_id);
           }
-          return this._updateNavState();
+          this._updateNavState();
+          return this._updateIndicatorState();
         };
 
         TouchyPanner.prototype._onStart = function(e, pointer) {};
@@ -264,7 +280,8 @@ Licenced under the Apache license (see LICENSE file)
             })(this)
           });
           this._current_option = id;
-          return this._updateNavState();
+          this._updateNavState();
+          return this._updateIndicatorState();
         };
 
         TouchyPanner.prototype._updateNavState = function() {
@@ -276,6 +293,12 @@ Licenced under the Apache license (see LICENSE file)
             return this.elm.removeClass('first');
           } else {
             return this.elm.removeClass('first last');
+          }
+        };
+
+        TouchyPanner.prototype._updateIndicatorState = function() {
+          if (this._indicator_elm && this._indicator_elm.length) {
+            return this._indicator_elm.find('.icon').removeClass('active').eq(this._current_option).addClass('active');
           }
         };
 

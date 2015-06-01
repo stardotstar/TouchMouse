@@ -33,6 +33,7 @@ Licenced under the Apache license (see LICENSE file)
 				@_setupTouchyInstance()
 				@_configureOptions()
 				@_configureNav()
+				@_configureIndicator()
 				@value(@options.initial_index)
 				@_setupResize()
 
@@ -46,6 +47,8 @@ Licenced under the Apache license (see LICENSE file)
 				container_elm: '.options'
 				option_elm: '.option'
 				nav_elm: '.nav'
+				indicator: false
+				indicator_elm: '.indicator'
 				threshold: 20
 				velocityXThreshold: 1
 				deltaXThresholdPercent: .3
@@ -97,6 +100,7 @@ Licenced under the Apache license (see LICENSE file)
 				
 				for option in @_options
 					@_addOptionPage(option)
+				true
 
 			_addOptionPage: (option) ->
 				id = $(option).data('id')
@@ -129,11 +133,18 @@ Licenced under the Apache license (see LICENSE file)
 
 			_configureNav: ->
 				@_nav_elm = @elm.find(@options.nav_elm)
+				true
+
+			_configureIndicator: ->
+				return unless @options.indicator
+				@_indicator_elm = @elm.find(@options.indicator_elm)
+				@_indicator_elm.append("<span class='icon'>") for i in [1..@_option_count]
+				true
 
 			value: (val) ->
 				if val?
 					# console.log('setting,',val)
-					@_pageTo(val,true)
+					@_pageTo(val)
 				else
 					@_current_option
 
@@ -146,6 +157,7 @@ Licenced under the Apache license (see LICENSE file)
 				else
 					@_tl.seek("option-#{data_id}")
 				@_updateNavState()
+				@_updateIndicatorState()
 
 			_onStart: (e, pointer) ->
 				# console.log('Touch started')
@@ -253,6 +265,7 @@ Licenced under the Apache license (see LICENSE file)
 						@emitEvent('panchanged', [ @ ] )
 				@_current_option = id
 				@_updateNavState()
+				@_updateIndicatorState()
 
 			_updateNavState: ->
 				if @_current_option == 0
@@ -263,6 +276,13 @@ Licenced under the Apache license (see LICENSE file)
 					@elm.removeClass('first')
 				else
 					@elm.removeClass('first last')
+
+			_updateIndicatorState: ->
+				if @_indicator_elm and @_indicator_elm.length
+					@_indicator_elm.find('.icon')
+						.removeClass('active')
+						.eq(@_current_option)
+							.addClass('active')
 
 			_valueToPercent: (val) ->
 				((val - @options.min_value) / (@options.max_value - @options.min_value)) * 100
