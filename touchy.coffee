@@ -69,10 +69,11 @@ Events have the following custom data:
 				drag: false
 				drag_axis: null
 				cancel_on_scroll: true
+				scroll_threshold: 20
 				handle: ''
-				hold_interval: 500
+				hold_interval: 100
 				tap_threshold: 4
-				double_tap_interval: 500
+				double_tap_interval: 100
 				drag_threshold: 5
 
 			extend Touchy.prototype, EventEmitter.prototype
@@ -305,6 +306,14 @@ Events have the following custom data:
 				@distance = 
 					x: @current_point.x - @start_point.x
 					y: @current_point.y - @start_point.y
+
+
+				console.log(@distance)
+
+				if @options.cancel_on_scroll and Math.abs(@distance.y) > @options.scroll_threshold
+					console.log('cancelling above scroll_threshold')
+					@cancelTouchy(event)
+					return
 
 				@end_time = new Date()
 

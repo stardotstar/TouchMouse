@@ -80,10 +80,11 @@ Events have the following custom data:
           drag: false,
           drag_axis: null,
           cancel_on_scroll: true,
+          scroll_threshold: 20,
           handle: '',
-          hold_interval: 500,
+          hold_interval: 100,
           tap_threshold: 4,
-          double_tap_interval: 500,
+          double_tap_interval: 100,
           drag_threshold: 5
         };
 
@@ -359,6 +360,12 @@ Events have the following custom data:
             x: this.current_point.x - this.start_point.x,
             y: this.current_point.y - this.start_point.y
           };
+          console.log(this.distance);
+          if (this.options.cancel_on_scroll && Math.abs(this.distance.y) > this.options.scroll_threshold) {
+            console.log('cancelling above scroll_threshold');
+            this.cancelTouchy(event);
+            return;
+          }
           this.end_time = new Date();
           this._triggerElementEvent('end', event, this, pointer);
           if (!this._cancelled_tap && Math.abs(this.distance.x) <= this.options.tap_threshold && Math.abs(this.distance.y) <= this.options.tap_threshold) {
