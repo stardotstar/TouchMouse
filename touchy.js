@@ -296,6 +296,11 @@ Events have the following custom data:
             x: this.current_point.x - this.start_point.x,
             y: this.current_point.y - this.start_point.y
           };
+          if (this.options.cancel_on_scroll && Math.abs(this.distance.y) > this.options.scroll_threshold) {
+            console.log('cancelling above scroll_threshold');
+            this.cancelTouchy(event);
+            return;
+          }
           if (this.options.axis === 'y') {
             this.distance.x = 0;
           }
@@ -360,7 +365,6 @@ Events have the following custom data:
             x: this.current_point.x - this.start_point.x,
             y: this.current_point.y - this.start_point.y
           };
-          console.log(this.distance);
           if (this.options.cancel_on_scroll && Math.abs(this.distance.y) > this.options.scroll_threshold) {
             console.log('cancelling above scroll_threshold');
             this.cancelTouchy(event);

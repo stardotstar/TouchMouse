@@ -247,6 +247,11 @@ Events have the following custom data:
 					x: @current_point.x - @start_point.x
 					y: @current_point.y - @start_point.y
 
+				if @options.cancel_on_scroll and Math.abs(@distance.y) > @options.scroll_threshold
+					console.log('cancelling above scroll_threshold')
+					@cancelTouchy(event)
+					return
+
 				@distance.x = 0 if @options.axis == 'y'
 				@distance.y = 0 if @options.axis == 'x'
 
@@ -306,9 +311,6 @@ Events have the following custom data:
 				@distance = 
 					x: @current_point.x - @start_point.x
 					y: @current_point.y - @start_point.y
-
-
-				console.log(@distance)
 
 				if @options.cancel_on_scroll and Math.abs(@distance.y) > @options.scroll_threshold
 					console.log('cancelling above scroll_threshold')
