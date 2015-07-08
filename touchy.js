@@ -154,7 +154,6 @@ Events have the following custom data:
           bind_method = bind ? 'bind' : 'unbind';
           eventie[bind_method](handle, 'mousedown', this);
           eventie[bind_method](handle, 'touchstart', this);
-          console.log(disableImageDrag);
           if (bind) {
             return typeof disableImageDrag === "function" ? disableImageDrag(handle) : void 0;
           }

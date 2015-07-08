@@ -132,7 +132,6 @@ Events have the following custom data:
 				eventie[bind_method](handle, 'mousedown', @)
 				eventie[bind_method](handle, 'touchstart', @)
 
-				console.log(disableImageDrag)
 				disableImageDrag?(handle) if bind
 
 			handleEvent: (event) ->
