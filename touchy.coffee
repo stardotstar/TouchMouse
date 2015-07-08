@@ -42,7 +42,21 @@ Events have the following custom data:
 			for img in $(handle).find('img')
 				img.ondragstart = dummyDragStart
 
+			null
+
 		class Touchy
+
+			_default_options =
+				drag: false
+				drag_axis: null
+				cancel_on_scroll: true
+				scroll_threshold: 20
+				handle: ''
+				hold_interval: 100
+				tap_threshold: 4
+				double_tap_interval: 100
+				drag_threshold: 5
+
 			constructor: (elm,options) ->
 				@elm = $(elm).first()
 				@elm.data('touchy',@)
@@ -64,17 +78,6 @@ Events have the following custom data:
 				@_setupScrollHandler()
 
 				@enable()
-
-			_default_options =
-				drag: false
-				drag_axis: null
-				cancel_on_scroll: true
-				scroll_threshold: 20
-				handle: ''
-				hold_interval: 100
-				tap_threshold: 4
-				double_tap_interval: 100
-				drag_threshold: 5
 
 			extend Touchy.prototype, EventEmitter.prototype
 
@@ -98,10 +101,13 @@ Events have the following custom data:
 
 			_bindHandles: (bind = true) ->
 				if window.navigator.msPointerEnabled
+					# console.log('msPointerEnabled')
 					binder = @_bindMSPointerEvents
 				else if window.navigator.pointerEnabled
+					# console.log('pointerEnabled')
 					binder = @_bindPointerEvents
 				else
+					# console.log('touchEnabled')
 					binder = @_bindTouchMouse
 
 				for handle in @handles
@@ -110,14 +116,14 @@ Events have the following custom data:
 			_bindMSPointerEvents: (handle, bind) ->
 				# IE10
 				bind_method = if bind then 'bind' else 'unbind';
-				eventie[bind_method](handle, 'pointerdown', @)
+				eventie[bind_method](handle, 'MSPointerDown', @)
 				# disable scroll
 				handle.style.touchAction = if bind then 'none' else ''
 
 			_bindPointerEvents: (handle, bind) ->
 				# IE11
 				bind_method = if bind then 'bind' else 'unbind';
-				eventie[bind_method](handle, 'MSPointerDown', @)
+				eventie[bind_method](handle, 'pointerdown', @)
 				# disable scroll
 				handle.style.touchAction = if bind then 'none' else ''
 
@@ -126,7 +132,8 @@ Events have the following custom data:
 				eventie[bind_method](handle, 'mousedown', @)
 				eventie[bind_method](handle, 'touchstart', @)
 
-				disableImageDrag(handle) if bind
+				console.log(disableImageDrag)
+				disableImageDrag?(handle) if bind
 
 			handleEvent: (event) ->
 				method = "on#{event.type}"
@@ -155,7 +162,8 @@ Events have the following custom data:
 				@startTouchy(event, event)
 				false
 
-			onMSPointerDown: Touchy.onpointerdown
+			onMSPointerDown: (event) ->
+				@onpointerdown(event)
 
 			post_start_events =
 				mousedown: ['mousemove','mouseup']
@@ -233,7 +241,8 @@ Events have the following custom data:
 					@moveTouchy(event, event)
 				false
 
-			onMSPointerMove: @onpointermove
+			onMSPointerMove: (event) ->
+				@onpointermove(event)
 
 			ontouchmove: (event) ->
 				touch = @_getCurrentTouch(event.changedTouches)
@@ -297,7 +306,8 @@ Events have the following custom data:
 				if event.pointerId == @pointerId
 					@endTouchy(event, event)
 
-			onMSPointerUp: @onpointerup
+			onMSPointerUp: (event) ->
+				@onpointerup(event)
 
 			ontouchend: (event) ->
 				touch = @_getCurrentTouch(event.changedTouches)
@@ -419,11 +429,11 @@ Events have the following custom data:
 	if typeof define == 'function' and define.amd
 		# amd
 		define([
-			'jquery/jquery'
-			'eventEmitter/EventEmitter',
-			'eventie/eventie',
-			'gsap/gsap',
-			'jquery-transform/jquery-transform'
+			'jquery'
+			'eventEmitter',
+			'eventie',
+			'gsap',
+			'jquery-transform'
 		], TouchyDefinition)
 	else if typeof exports == 'object'
 		# commonjs

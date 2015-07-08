@@ -128,11 +128,10 @@ Licenced under the Apache license (see LICENSE file)
 					@options.max_value = @options.values.length-1
 
 			_setHandleClass: (add = false) ->
-				if event.target == @handle.get(0)
-					if add
-						@handle.addClass('touching')
-					else
-						@handle.removeClass('touching')
+				if add
+					@handle.addClass('touching')
+				else
+					@handle.removeClass('touching')
 
 			value: (val) ->
 				if val?
@@ -248,11 +247,10 @@ Licenced under the Apache license (see LICENSE file)
 	if typeof define == 'function' and define.amd
 		# amd
 		define([
-			'jquery/jquery',
-			'eventEmitter/EventEmitter',
-			'gsap/gsap',
-			'jquery-transform/jquery-transform'
-
+			'jquery',
+			'eventEmitter',
+			'gsap',
+			'jquery-transform'
 		], TouchySliderDefinition)
 	else if typeof exports == 'object'
 		# commonjs

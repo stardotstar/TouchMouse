@@ -373,7 +373,7 @@ Licenced under the Apache license (see LICENSE file)
       return TouchyPanner;
     };
     if (typeof define === 'function' && define.amd) {
-      return define(['jquery/jquery', 'eventEmitter/EventEmitter', 'gsap/gsap', 'jquery-transform/jquery-transform'], TouchyPannerDefinition);
+      return define(['jquery', 'eventEmitter', 'gsap', 'jquery-transform'], TouchyPannerDefinition);
     } else if (typeof exports === 'object') {
       return module.exports = TouchyPannerDefinition(require('jquery'), require('wolfy87-eventemitter'), require('gsap'), require('jquery-transform'));
     } else {

@@ -340,11 +340,10 @@ Licenced under the Apache license (see LICENSE file)
 	if typeof define == 'function' and define.amd
 		# amd
 		define([
-			'jquery/jquery',
-			'eventEmitter/EventEmitter',
-			'gsap/gsap',
-			'jquery-transform/jquery-transform'
-
+			'jquery',
+			'eventEmitter',
+			'gsap',
+			'jquery-transform'
 		], TouchyPannerDefinition)
 	else if typeof exports == 'object'
 		# commonjs

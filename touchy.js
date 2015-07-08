@@ -36,21 +36,32 @@ Events have the following custom data:
         return false;
       };
       disableImageDrag = is_ie8 ? $.noop() : function(handle) {
-        var handle_elm, img, _i, _len, _ref, _results;
+        var handle_elm, img, _i, _len, _ref;
         handle_elm = handle;
         if (handle_elm.nodeName === 'IMG') {
           handle_elm.ondragstart = dummyDragStart;
         }
         _ref = $(handle).find('img');
-        _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           img = _ref[_i];
-          _results.push(img.ondragstart = dummyDragStart);
+          img.ondragstart = dummyDragStart;
         }
-        return _results;
+        return null;
       };
       Touchy = (function() {
         var ontouchcancel, post_start_events, _default_options;
+
+        _default_options = {
+          drag: false,
+          drag_axis: null,
+          cancel_on_scroll: true,
+          scroll_threshold: 20,
+          handle: '',
+          hold_interval: 100,
+          tap_threshold: 4,
+          double_tap_interval: 100,
+          drag_threshold: 5
+        };
 
         function Touchy(elm, options) {
           this.elm = $(elm).first();
@@ -75,18 +86,6 @@ Events have the following custom data:
           this._setupScrollHandler();
           this.enable();
         }
-
-        _default_options = {
-          drag: false,
-          drag_axis: null,
-          cancel_on_scroll: true,
-          scroll_threshold: 20,
-          handle: '',
-          hold_interval: 100,
-          tap_threshold: 4,
-          double_tap_interval: 100,
-          drag_threshold: 5
-        };
 
         extend(Touchy.prototype, EventEmitter.prototype);
 
@@ -139,14 +138,14 @@ Events have the following custom data:
         Touchy.prototype._bindMSPointerEvents = function(handle, bind) {
           var bind_method;
           bind_method = bind ? 'bind' : 'unbind';
-          eventie[bind_method](handle, 'pointerdown', this);
+          eventie[bind_method](handle, 'MSPointerDown', this);
           return handle.style.touchAction = bind ? 'none' : '';
         };
 
         Touchy.prototype._bindPointerEvents = function(handle, bind) {
           var bind_method;
           bind_method = bind ? 'bind' : 'unbind';
-          eventie[bind_method](handle, 'MSPointerDown', this);
+          eventie[bind_method](handle, 'pointerdown', this);
           return handle.style.touchAction = bind ? 'none' : '';
         };
 
@@ -155,8 +154,9 @@ Events have the following custom data:
           bind_method = bind ? 'bind' : 'unbind';
           eventie[bind_method](handle, 'mousedown', this);
           eventie[bind_method](handle, 'touchstart', this);
+          console.log(disableImageDrag);
           if (bind) {
-            return disableImageDrag(handle);
+            return typeof disableImageDrag === "function" ? disableImageDrag(handle) : void 0;
           }
         };
 
@@ -194,7 +194,9 @@ Events have the following custom data:
           return false;
         };
 
-        Touchy.prototype.onMSPointerDown = Touchy.onpointerdown;
+        Touchy.prototype.onMSPointerDown = function(event) {
+          return this.onpointerdown(event);
+        };
 
         post_start_events = {
           mousedown: ['mousemove', 'mouseup'],
@@ -278,7 +280,9 @@ Events have the following custom data:
           return false;
         };
 
-        Touchy.prototype.onMSPointerMove = Touchy.onpointermove;
+        Touchy.prototype.onMSPointerMove = function(event) {
+          return this.onpointermove(event);
+        };
 
         Touchy.prototype.ontouchmove = function(event) {
           var touch;
@@ -348,7 +352,9 @@ Events have the following custom data:
           }
         };
 
-        Touchy.prototype.onMSPointerUp = Touchy.onpointerup;
+        Touchy.prototype.onMSPointerUp = function(event) {
+          return this.onpointerup(event);
+        };
 
         Touchy.prototype.ontouchend = function(event) {
           var touch;
@@ -485,7 +491,7 @@ Events have the following custom data:
       return Touchy;
     };
     if (typeof define === 'function' && define.amd) {
-      return define(['jquery/jquery', 'eventEmitter/EventEmitter', 'eventie/eventie', 'gsap/gsap', 'jquery-transform/jquery-transform'], TouchyDefinition);
+      return define(['jquery', 'eventEmitter', 'eventie', 'gsap', 'jquery-transform'], TouchyDefinition);
     } else if (typeof exports === 'object') {
       return module.exports = TouchyDefinition(require('jquery'), require('wolfy87-eventemitter'), require('eventie'), require('gsap'), require('jquery-transform'));
     } else {

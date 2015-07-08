@@ -148,12 +148,10 @@ Licenced under the Apache license (see LICENSE file)
           if (add == null) {
             add = false;
           }
-          if (event.target === this.handle.get(0)) {
-            if (add) {
-              return this.handle.addClass('touching');
-            } else {
-              return this.handle.removeClass('touching');
-            }
+          if (add) {
+            return this.handle.addClass('touching');
+          } else {
+            return this.handle.removeClass('touching');
           }
         };
 
@@ -291,7 +289,7 @@ Licenced under the Apache license (see LICENSE file)
       return TouchySlider;
     };
     if (typeof define === 'function' && define.amd) {
-      return define(['jquery/jquery', 'eventEmitter/EventEmitter', 'gsap/gsap', 'jquery-transform/jquery-transform'], TouchySliderDefinition);
+      return define(['jquery', 'eventEmitter', 'gsap', 'jquery-transform'], TouchySliderDefinition);
     } else if (typeof exports === 'object') {
       return module.exports = TouchySliderDefinition(require('jquery'), require('wolfy87-eventemitter'), require('gsap'), require('jquery-transform'));
     } else {
