@@ -44,6 +44,14 @@ Events have the following custom data:
 
 			null
 
+		$.fn.extend
+			touchy: (options) ->
+				this.defaultOptions = {}
+				settings = $.extend({}, this.defaultOptions, options)
+
+				return this.each ->
+					new Touchy(this,settings)
+
 		class Touchy
 
 			_default_options =
@@ -424,7 +432,6 @@ Events have the following custom data:
 
 		return Touchy
 
-
 	if typeof define == 'function' and define.amd
 		# amd
 		define([
@@ -451,7 +458,6 @@ Events have the following custom data:
 			window.eventie,
 			window.TweenMax
 		)
-	
 
 )(window)
 

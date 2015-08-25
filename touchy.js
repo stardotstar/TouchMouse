@@ -48,6 +48,16 @@ Events have the following custom data:
         }
         return null;
       };
+      $.fn.extend({
+        touchy: function(options) {
+          var settings;
+          this.defaultOptions = {};
+          settings = $.extend({}, this.defaultOptions, options);
+          return this.each(function() {
+            return new Touchy(this, settings);
+          });
+        }
+      });
       Touchy = (function() {
         var ontouchcancel, post_start_events, _default_options;
 
