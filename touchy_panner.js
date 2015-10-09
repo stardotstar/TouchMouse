@@ -21,7 +21,7 @@ Licenced under the Apache license (see LICENSE file)
       return object;
     };
     noop = function() {};
-    TouchyPannerDefinition = function($, EventEmitter, TweenMax) {
+    TouchyPannerDefinition = function(Touchy, $, EventEmitter, TweenMax) {
       var TouchyPanner;
       TouchyPanner = (function() {
         var _default_options;
@@ -373,11 +373,11 @@ Licenced under the Apache license (see LICENSE file)
       return TouchyPanner;
     };
     if (typeof define === 'function' && define.amd) {
-      return define(['jquery', 'eventEmitter', 'gsap', 'jquery-transform'], TouchyPannerDefinition);
+      return define(['touchy', 'jquery', 'eventEmitter', 'gsap', 'jquery-transform'], TouchyPannerDefinition);
     } else if (typeof exports === 'object') {
-      return module.exports = TouchyPannerDefinition(require('jquery'), require('wolfy87-eventemitter'), require('gsap'), require('jquery-transform'));
+      return module.exports = TouchyPannerDefinition(require('touchy'), require('jquery'), require('wolfy87-eventemitter'), require('gsap'), require('jquery-transform'));
     } else {
-      return window.TouchyPanner = TouchyPannerDefinition(window.jQuery, window.EventEmitter, window.TweenMax);
+      return window.TouchyPanner = TouchyPannerDefinition(window.Touchy, window.jQuery, window.EventEmitter, window.TweenMax);
     }
   })(window);
 

@@ -19,7 +19,7 @@ Licenced under the Apache license (see LICENSE file)
 
 	noop = ->
 
-	TouchyPannerDefinition = ($,EventEmitter,TweenMax) ->
+	TouchyPannerDefinition = (Touchy,$,EventEmitter,TweenMax) ->
 
 		class TouchyPanner
 			constructor: (elm,options) ->
@@ -340,6 +340,7 @@ Licenced under the Apache license (see LICENSE file)
 	if typeof define == 'function' and define.amd
 		# amd
 		define([
+			'touchy',
 			'jquery',
 			'eventEmitter',
 			'gsap',
@@ -348,6 +349,7 @@ Licenced under the Apache license (see LICENSE file)
 	else if typeof exports == 'object'
 		# commonjs
 		module.exports = TouchyPannerDefinition(
+			require('touchy'),
 			require('jquery'),
 			require('wolfy87-eventemitter'),
 			require('gsap'),
@@ -356,6 +358,7 @@ Licenced under the Apache license (see LICENSE file)
 	else
 		# global
 		window.TouchyPanner = TouchyPannerDefinition(
+			window.Touchy,
 			window.jQuery,
 			window.EventEmitter,
 			window.TweenMax

@@ -21,7 +21,7 @@ Licenced under the Apache license (see LICENSE file)
       return object;
     };
     noop = function() {};
-    TouchySliderDefinition = function($, EventEmitter, TweenMax) {
+    TouchySliderDefinition = function(Touchy, $, EventEmitter, TweenMax) {
       var TouchySlider;
       TouchySlider = (function() {
         var _default_options;
@@ -289,11 +289,11 @@ Licenced under the Apache license (see LICENSE file)
       return TouchySlider;
     };
     if (typeof define === 'function' && define.amd) {
-      return define(['jquery', 'eventEmitter', 'gsap', 'jquery-transform'], TouchySliderDefinition);
+      return define(['touchy', 'jquery', 'eventEmitter', 'gsap', 'jquery-transform'], TouchySliderDefinition);
     } else if (typeof exports === 'object') {
-      return module.exports = TouchySliderDefinition(require('jquery'), require('wolfy87-eventemitter'), require('gsap'), require('jquery-transform'));
+      return module.exports = TouchySliderDefinition(require('touchy'), require('jquery'), require('wolfy87-eventemitter'), require('gsap'), require('jquery-transform'));
     } else {
-      return window.TouchySlider = TouchySliderDefinition(window.jQuery, window.EventEmitter, window.TweenMax);
+      return window.TouchySlider = TouchySliderDefinition(window.Touchy, window.jQuery, window.EventEmitter, window.TweenMax);
     }
   })(window);
 

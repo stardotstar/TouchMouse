@@ -19,7 +19,7 @@ Licenced under the Apache license (see LICENSE file)
 
 	noop = ->
 
-	TouchySliderDefinition = ($,EventEmitter,TweenMax) ->
+	TouchySliderDefinition = (Touchy,$,EventEmitter,TweenMax) ->
 
 		class TouchySlider
 			constructor: (elm,options) ->
@@ -247,6 +247,7 @@ Licenced under the Apache license (see LICENSE file)
 	if typeof define == 'function' and define.amd
 		# amd
 		define([
+			'touchy',
 			'jquery',
 			'eventEmitter',
 			'gsap',
@@ -255,6 +256,7 @@ Licenced under the Apache license (see LICENSE file)
 	else if typeof exports == 'object'
 		# commonjs
 		module.exports = TouchySliderDefinition(
+			require('touchy'),
 			require('jquery'),
 			require('wolfy87-eventemitter'),
 			require('gsap'),
@@ -263,6 +265,7 @@ Licenced under the Apache license (see LICENSE file)
 	else
 		# global
 		window.TouchySlider = TouchySliderDefinition(
+			window.Touchy,
 			window.jQuery,
 			window.EventEmitter,
 			window.TweenMax
